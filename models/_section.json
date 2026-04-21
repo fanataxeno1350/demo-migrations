@@ -51,8 +51,15 @@
         "cards",
         "columns",
         "fragment",
-
-        "----------New Blocks---------------"
+        "----------New Blocks---------------",
+        "main-header",
+        "spotlight-home-wrap",
+        "what-we-do-wrap",
+        "spirit-of-rise",
+        "latest-stories",
+        "work-with-us",
+        "faqs-section",
+        "footer-main"
       ]
     }
   ]

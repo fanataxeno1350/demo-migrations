@@ -1,0 +1,115 @@
+import { createOptimizedPicture } from '../../scripts/aem.js';
+import { moveInstrumentation } from '../../scripts/scripts.js';
+
+export default function decorate(block) {
+  // Filter rows based on the number of children to distinguish sections from cards
+  const sectionRows = [...block.children].filter(
+    (row) => row.children.length === 3, // Section rows have 3 cells: heading, description, cards (container)
+  );
+  const cardRows = [...block.children].filter(
+    (row) => row.children.length === 4, // Card rows have 4 cells: image, mobileImage, description, link
+  );
+
+  block.innerHTML = ''; // Clear the block to rebuild
+
+  sectionRows.forEach((sectionRow, sectionIndex) => {
+    // Destructure cells for section rows directly
+    const [headingCell, descriptionCell, cardsContainerCell] = [...sectionRow.children];
+
+    const sectionEl = document.createElement('section');
+    sectionEl.classList.add('section', 'spirit-of-rise');
+    if (sectionIndex % 2 !== 0) {
+      sectionEl.classList.add('grey-bg');
+    }
+
+    const sectionHeader = document.createElement('div');
+    sectionHeader.classList.add('section-header', 'text-center', 'pb-3');
+
+    const heading = document.createElement('h2');
+    heading.classList.add('heading', 'font-regular', 'aos-init', 'aos-animate');
+    heading.textContent = headingCell.textContent.trim();
+    moveInstrumentation(headingCell, heading);
+
+    const description = document.createElement('p');
+    description.classList.add('aos-init', 'aos-animate');
+    description.textContent = descriptionCell.textContent.trim();
+    moveInstrumentation(descriptionCell, description);
+
+    sectionHeader.append(heading, description);
+
+    const performanceDriven = document.createElement('div');
+    performanceDriven.classList.add('performance-driven', 'performace-driven-home');
+
+    const container = document.createElement('div');
+    container.classList.add('container');
+
+    const cardsWrapper = document.createElement('div');
+    cardsWrapper.classList.add('performace-driven-cards');
+
+    // Assuming cards for each section are grouped sequentially in the authored block
+    // This is a simplification based on the example structure.
+    // A more robust solution might involve a mapping or explicit card references.
+    const cardsPerSection = cardRows.length / sectionRows.length;
+    const startIndex = sectionIndex * cardsPerSection;
+    const endIndex = startIndex + cardsPerSection;
+
+    for (let i = startIndex; i < endIndex; i += 1) {
+      const cardRow = cardRows[i];
+      if (!cardRow) continue;
+
+      // Destructure cells for card rows directly
+      const [imageCell, mobileImageCell, descCell, linkCell] = [...cardRow.children];
+
+      const link = document.createElement('a');
+      link.classList.add('performace-driven-cards-link');
+      const foundLink = linkCell.querySelector('a');
+      if (foundLink) {
+        link.href = foundLink.href; // Correctly read href from aem-content cell
+        link.target = '_blank'; // Assuming target blank from original HTML
+      }
+      moveInstrumentation(linkCell, link);
+
+      const cardWrapper = document.createElement('div');
+      cardWrapper.classList.add('performace-driven-card-wrapper');
+
+      const cardImageDiv = document.createElement('div');
+      cardImageDiv.classList.add('card-image');
+
+      const picture = document.createElement('picture');
+      const mobileImg = mobileImageCell.querySelector('img');
+      if (mobileImg) {
+        const source = document.createElement('source');
+        source.media = '(max-width: 576px)';
+        source.srcset = mobileImg.src;
+        picture.append(source);
+      }
+
+      const desktopImg = imageCell.querySelector('img');
+      if (desktopImg) {
+        const optimizedPic = createOptimizedPicture(desktopImg.src, desktopImg.alt, false, [{ width: '750' }]);
+        moveInstrumentation(desktopImg, optimizedPic.querySelector('img'));
+        picture.append(...optimizedPic.children);
+      }
+      cardImageDiv.append(picture);
+      moveInstrumentation(imageCell, cardImageDiv); // Instrument the original image cell to the new div
+
+      const boxCard = document.createElement('div');
+      boxCard.classList.add('performace-driven-home-box-card');
+
+      const desc = document.createElement('p');
+      desc.classList.add('desc');
+      desc.textContent = descCell.textContent.trim();
+      moveInstrumentation(descCell, desc);
+
+      boxCard.append(desc);
+      cardWrapper.append(cardImageDiv, boxCard);
+      link.append(cardWrapper);
+      cardsWrapper.append(link);
+    }
+
+    container.append(cardsWrapper);
+    performanceDriven.append(container);
+    sectionEl.append(sectionHeader, performanceDriven);
+    block.append(sectionEl);
+  });
+}
