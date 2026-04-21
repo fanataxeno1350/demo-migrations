@@ -1,31 +1,31 @@
 {
   "definitions": [
     {
-      "title": "What-We-Do-Wrap",
-      "id": "what-we-do-wrap",
+      "title": "Spirit-Of-Rise",
+      "id": "spirit-of-rise",
       "plugins": {
         "xwalk": {
           "page": {
             "resourceType": "core/franklin/components/block/v1/block",
             "template": {
-              "filter": "what-we-do-wrap",
-              "model": "what-we-do-wrap",
-              "name": "What-We-Do-Wrap"
+              "filter": "spirit-of-rise",
+              "model": "spirit-of-rise",
+              "name": "Spirit-Of-Rise"
             }
           }
         }
       }
     },
     {
-      "title": "Business-Vertical-Item",
-      "id": "business-vertical-item",
+      "title": "Spirit-Of-Rise-Card",
+      "id": "spirit-of-rise-card",
       "plugins": {
         "xwalk": {
           "page": {
             "resourceType": "core/franklin/components/block/v1/block/item",
             "template": {
-              "model": "business-vertical-item",
-              "name": "Business-Vertical-Item"
+              "model": "spirit-of-rise-card",
+              "name": "Spirit-Of-Rise-Card"
             }
           }
         }
@@ -34,7 +34,7 @@
   ],
   "models": [
     {
-      "id": "what-we-do-wrap",
+      "id": "spirit-of-rise",
       "fields": [
         {
           "component": "text",
@@ -50,14 +50,14 @@
         },
         {
           "component": "container",
-          "item": "business-vertical-item",
-          "label": "Business Verticals",
-          "name": "businessVerticals"
+          "item": "spirit-of-rise-card",
+          "label": "Cards",
+          "name": "cards"
         }
       ]
     },
     {
-      "id": "business-vertical-item",
+      "id": "spirit-of-rise-card",
       "fields": [
         {
           "component": "reference",
@@ -66,21 +66,15 @@
           "valueType": "string"
         },
         {
-          "component": "text",
-          "label": "Title",
-          "name": "title",
-          "valueType": "string"
-        },
-        {
-          "component": "reference",
-          "label": "Title Icon",
-          "name": "icon",
-          "valueType": "string"
-        },
-        {
           "component": "aem-content",
           "label": "Link",
           "name": "link",
+          "valueType": "string"
+        },
+        {
+          "component": "text",
+          "label": "Description",
+          "name": "description",
           "valueType": "string"
         }
       ]
@@ -88,9 +82,9 @@
   ],
   "filters": [
     {
-      "id": "what-we-do-wrap",
+      "id": "spirit-of-rise",
       "components": [
-        "business-vertical-item"
+        "spirit-of-rise-card"
       ]
     }
   ]

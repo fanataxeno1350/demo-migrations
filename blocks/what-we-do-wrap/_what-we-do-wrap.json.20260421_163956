@@ -67,13 +67,25 @@
         },
         {
           "component": "text",
+          "label": "Image Alt",
+          "name": "imageAlt",
+          "valueType": "string"
+        },
+        {
+          "component": "text",
+          "label": "Image Title",
+          "name": "imageTitle",
+          "valueType": "string"
+        },
+        {
+          "component": "text",
           "label": "Title",
           "name": "title",
           "valueType": "string"
         },
         {
           "component": "reference",
-          "label": "Title Icon",
+          "label": "Icon",
           "name": "icon",
           "valueType": "string"
         },
@@ -81,6 +93,12 @@
           "component": "aem-content",
           "label": "Link",
           "name": "link",
+          "valueType": "string"
+        },
+        {
+          "component": "text",
+          "label": "Aria Label",
+          "name": "ariaLabel",
           "valueType": "string"
         }
       ]

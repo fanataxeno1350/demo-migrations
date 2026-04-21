@@ -1,31 +1,31 @@
 {
   "definitions": [
     {
-      "title": "What-We-Do-Wrap",
-      "id": "what-we-do-wrap",
+      "title": "Work-With-Us",
+      "id": "work-with-us",
       "plugins": {
         "xwalk": {
           "page": {
             "resourceType": "core/franklin/components/block/v1/block",
             "template": {
-              "filter": "what-we-do-wrap",
-              "model": "what-we-do-wrap",
-              "name": "What-We-Do-Wrap"
+              "filter": "work-with-us",
+              "model": "work-with-us",
+              "name": "Work-With-Us"
             }
           }
         }
       }
     },
     {
-      "title": "Business-Vertical-Item",
-      "id": "business-vertical-item",
+      "title": "Work-With-Us-Slide",
+      "id": "work-with-us-slide",
       "plugins": {
         "xwalk": {
           "page": {
             "resourceType": "core/franklin/components/block/v1/block/item",
             "template": {
-              "model": "business-vertical-item",
-              "name": "Business-Vertical-Item"
+              "model": "work-with-us-slide",
+              "name": "Work-With-Us-Slide"
             }
           }
         }
@@ -34,30 +34,24 @@
   ],
   "models": [
     {
-      "id": "what-we-do-wrap",
+      "id": "work-with-us",
       "fields": [
         {
           "component": "text",
-          "label": "Heading",
+          "label": "Block Heading",
           "name": "heading",
           "valueType": "string"
         },
         {
-          "component": "text",
-          "label": "Description",
-          "name": "description",
-          "valueType": "string"
-        },
-        {
           "component": "container",
-          "item": "business-vertical-item",
-          "label": "Business Verticals",
-          "name": "businessVerticals"
+          "item": "work-with-us-slide",
+          "label": "Slides",
+          "name": "slides"
         }
       ]
     },
     {
-      "id": "business-vertical-item",
+      "id": "work-with-us-slide",
       "fields": [
         {
           "component": "reference",
@@ -67,20 +61,32 @@
         },
         {
           "component": "text",
-          "label": "Title",
+          "label": "Image Alt Text",
+          "name": "altText",
+          "valueType": "string"
+        },
+        {
+          "component": "text",
+          "label": "Slide Title",
           "name": "title",
           "valueType": "string"
         },
         {
-          "component": "reference",
-          "label": "Title Icon",
-          "name": "icon",
+          "component": "text",
+          "label": "Description",
+          "name": "description",
           "valueType": "string"
         },
         {
           "component": "aem-content",
-          "label": "Link",
-          "name": "link",
+          "label": "CTA Link",
+          "name": "ctaLink",
+          "valueType": "string"
+        },
+        {
+          "component": "text",
+          "label": "CTA Label",
+          "name": "ctaLabel",
           "valueType": "string"
         }
       ]
@@ -88,9 +94,9 @@
   ],
   "filters": [
     {
-      "id": "what-we-do-wrap",
+      "id": "work-with-us",
       "components": [
-        "business-vertical-item"
+        "work-with-us-slide"
       ]
     }
   ]

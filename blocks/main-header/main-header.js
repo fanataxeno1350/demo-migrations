@@ -3,18 +3,9 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 
 function transformNestedLists(rootUl) {
   rootUl.querySelectorAll('li').forEach((li) => {
-    // Add classes from ORIGINAL HTML for <li> elements
-    li.classList.add('nav-menu-item', 'list-item');
-
     const nested = li.querySelector(':scope > ul');
     const anchor = li.querySelector(':scope > a');
 
-    // Add classes from ORIGINAL HTML for <a> elements
-    if (anchor) {
-      anchor.classList.add('nav-menu-link');
-    }
-
-    // Normalize label-only nodes
     if (!anchor) {
       const textNode = [...li.childNodes].find(
         (n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim(),
@@ -28,48 +19,49 @@ function transformNestedLists(rootUl) {
     }
 
     if (nested) {
-      // Add classes from ORIGINAL HTML for <ul> elements
-      nested.classList.add('sub-menu');
       nested.remove();
       const subWrap = document.createElement('div');
-      subWrap.classList.add('has-sub-child'); // Class from ORIGINAL HTML
+      subWrap.classList.add('has-sub-child'); // From ORIGINAL HTML
       subWrap.append(nested);
       li.append(subWrap);
-
       const trigger = li.querySelector(':scope > a, :scope > span');
       if (trigger) {
         trigger.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
-          li.classList.toggle('active');
-          subWrap.classList.toggle('active');
+          li.classList.toggle('active'); // From ORIGINAL HTML
+          subWrap.classList.toggle('active'); // From ORIGINAL HTML
         });
       }
-      transformNestedLists(nested); // Recursively transform nested lists
+    }
+    // Apply classes to nested elements if they exist
+    if (li.querySelector('ul')) {
+      li.classList.add('top-level-li'); // From ORIGINAL HTML
+      li.querySelectorAll('ul').forEach(ul => ul.classList.add('has-sub-child')); // From ORIGINAL HTML
+      li.querySelectorAll('li').forEach(nestedLi => {
+        if (nestedLi.querySelector('ul')) {
+          nestedLi.classList.add('first-level-li'); // From ORIGINAL HTML
+          nestedLi.querySelectorAll('ul').forEach(innerUl => innerUl.classList.add('has-inner-sub-child')); // From ORIGINAL HTML
+        }
+      });
     }
   });
 }
 
 export default function decorate(block) {
-  const children = [...block.children];
+  const [
+    mainLogoRow,
+    mainLogoLinkRow,
+    year80LogoRow,
+    year80LogoLinkRow,
+    ...itemRows
+  ] = [...block.children];
 
-  // Root fields are identified by their content type, not fixed index
-  const logoRow = children.find(row => row.querySelector('picture') && !row.nextElementSibling?.querySelector('a'));
-  const logoLinkRow = children.find(row => row.querySelector('a') && row.previousElementSibling?.querySelector('picture'));
-  const year80LogoRow = children.find(row => row.querySelector('picture') && row.classList.contains('year-80-logo')); // Assuming year-80-logo class is added by AEM
-  const year80LogoLinkRow = children.find(row => row.querySelector('a') && row.previousElementSibling?.classList.contains('year-80-logo'));
+  block.innerHTML = ''; // Clear the block
 
-  // Filter out the identified root rows to get itemRows
-  const itemRows = children.filter(row =>
-    row !== logoRow &&
-    row !== logoLinkRow &&
-    row !== year80LogoRow &&
-    row !== year80LogoLinkRow
-  );
-
-  block.innerHTML = '';
   const header = document.createElement('header');
-  header.classList.add('main-header'); // Start with neutral classes only
+  header.classList.add('main-header'); // Do not add state classes like 'nav-up'
+  moveInstrumentation(block, header);
 
   const container = document.createElement('div');
   container.classList.add('container');
@@ -79,24 +71,29 @@ export default function decorate(block) {
   wrap.classList.add('wrap');
   container.append(wrap);
 
-  // Logo
+  // Main Logo
   const logoDiv = document.createElement('div');
   logoDiv.classList.add('logo');
-  const logoLink = document.createElement('a');
-  logoLink.href = logoLinkRow?.querySelector('a')?.href || '#';
-  const logoPicture = logoRow?.querySelector('picture');
-  if (logoPicture) {
-    const img = logoPicture.querySelector('img');
-    const optimizedPic = createOptimizedPicture(img.src, img.alt, false, [{ width: '200' }]);
-    moveInstrumentation(img, optimizedPic.querySelector('img'));
-    logoLink.append(optimizedPic);
+  const mainLogoLink = document.createElement('a');
+  mainLogoLink.href = mainLogoLinkRow?.querySelector('a')?.href || '#';
+  const mainLogoPicture = mainLogoRow?.querySelector('picture');
+  if (mainLogoPicture) {
+    const mainLogoImg = mainLogoPicture.querySelector('img');
+    const optimizedMainLogo = createOptimizedPicture(
+      mainLogoImg.src,
+      mainLogoImg.alt,
+      false,
+      [{ width: '200' }],
+    );
+    optimizedMainLogo.querySelector('img').classList.add('hiddenlogo1');
+    moveInstrumentation(mainLogoPicture, optimizedMainLogo.querySelector('img'));
+    mainLogoLink.append(optimizedMainLogo);
   }
-  logoDiv.append(logoLink);
-  if (logoRow) moveInstrumentation(logoRow, logoDiv);
-  if (logoLinkRow) moveInstrumentation(logoLinkRow, logoLink);
+  moveInstrumentation(mainLogoRow, mainLogoLink);
+  logoDiv.append(mainLogoLink);
   wrap.append(logoDiv);
 
-  // Hamburger
+  // Hamburger menu
   const hamburger = document.createElement('div');
   hamburger.classList.add('hamburger');
   const hamburgerUl = document.createElement('ul');
@@ -106,381 +103,559 @@ export default function decorate(block) {
   hamburger.append(hamburgerUl);
   wrap.append(hamburger);
 
-  // Main Navigation
+  // Navigation
   const nav = document.createElement('nav');
   nav.classList.add('main-nav');
-  const navUl = document.createElement('ul');
-  navUl.setAttribute('itemscope', '');
-  navUl.setAttribute('itemtype', 'http://www.schema.org/SiteNavigationElement');
-  nav.append(navUl);
+  nav.setAttribute('itemscope', '');
+  nav.setAttribute('itemtype', 'http://www.schema.org/SiteNavigationElement');
   wrap.append(nav);
 
-  // Item row filtering based on cell count as per BlockJson
-  const navigationItems = itemRows.filter((row) => [...row.children].length === 7);
-  const pressReleaseItems = itemRows.filter((row) => [...row.children].length === 4);
-  const contactLinkItems = itemRows.filter((row) => [...row.children].length === 3);
-  const searchSuggestionItems = itemRows.filter((row) => [...row.children].length === 1);
+  const navUl = document.createElement('ul');
+  nav.append(navUl);
+
+  // Filter item rows based on their structure
+  const navigationItems = itemRows.filter((row) => row.children.length === 7 && row.querySelector('ul'));
+  const contactLinkItems = itemRows.filter((row) => row.children.length === 3);
+  const searchItems = itemRows.filter((row) => row.children.length === 7 && row.querySelector('form') === null); // Exclude search items that have a form in the original HTML
+  const pressReleaseItems = itemRows.filter((row) => row.children.length === 4);
+
 
   navigationItems.forEach((row) => {
-    const cells = [...row.children];
-    const labelCell = cells[0];
-    const linkCell = cells[1];
-    const iconCell = cells[2];
-    const hierarchyCell = cells[3];
-    const sectionHeadingCell = cells[4];
-    const sectionDescCell = cells[5];
-    const sectionSubdescCell = cells[6];
+    const [
+      labelCell,
+      linkCell,
+      iconCell,
+      hierarchyTreeCell,
+      headingCell,
+      descriptionCell,
+      subDescriptionCell,
+    ] = [...row.children];
 
     const li = document.createElement('li');
     li.classList.add('has-child', 'hover-red');
     li.setAttribute('itemprop', 'name');
 
-    const anchor = document.createElement('a');
-    anchor.setAttribute('itemprop', 'url');
-    const foundLink = linkCell.querySelector('a');
-    if (foundLink) {
-      anchor.href = foundLink.href;
-    }
-    anchor.textContent = labelCell.textContent.trim();
-    li.append(anchor);
+    const linkAnchor = document.createElement('a');
+    linkAnchor.setAttribute('itemprop', 'url');
+    linkAnchor.href = linkCell?.querySelector('a')?.href || '#';
+    linkAnchor.textContent = labelCell?.textContent.trim() || '';
+    moveInstrumentation(linkCell, linkAnchor);
+    li.append(linkAnchor);
 
-    const iconPicture = iconCell.querySelector('picture');
+    const iconPicture = iconCell?.querySelector('picture');
     if (iconPicture) {
       const iconImg = iconPicture.querySelector('img');
-      const iconSpan = document.createElement('span');
-      const optimizedIcon = createOptimizedPicture(iconImg.src, iconImg.alt, false, [{ width: '24' }]);
-      moveInstrumentation(iconImg, optimizedIcon.querySelector('img'));
-      iconSpan.append(optimizedIcon);
-      li.append(iconSpan);
+      const optimizedIcon = createOptimizedPicture(
+        iconImg.src,
+        iconImg.alt,
+        false,
+        [{ width: '24' }],
+      );
+      moveInstrumentation(iconPicture, optimizedIcon.querySelector('img'));
+      const span = document.createElement('span');
+      span.append(optimizedIcon);
+      li.append(span);
     }
 
     const megaMenu = document.createElement('div');
     megaMenu.classList.add('mega-menu');
     const megaMenuWrap = document.createElement('div');
     megaMenuWrap.classList.add('wrap', 'container');
+    megaMenu.append(megaMenuWrap);
     const centerDiv = document.createElement('div');
     centerDiv.classList.add('center-div');
     megaMenuWrap.append(centerDiv);
-    megaMenu.append(megaMenuWrap);
 
     const leftDiv = document.createElement('div');
     leftDiv.classList.add('left-div');
+    centerDiv.append(leftDiv);
+
     const heading = document.createElement('h4');
     heading.classList.add('left-div-heading');
-    const headingLink = document.createElement('a');
-    headingLink.textContent = sectionHeadingCell.textContent.trim();
-    heading.append(headingLink);
+    const headingAnchor = document.createElement('a');
+    headingAnchor.textContent = headingCell?.textContent.trim() || '';
+    heading.append(headingAnchor);
     leftDiv.append(heading);
 
-    const desc = document.createElement('p');
-    desc.classList.add('left-div-desc');
-    desc.textContent = sectionDescCell.textContent.trim();
-    leftDiv.append(desc);
+    const description = document.createElement('p');
+    description.classList.add('left-div-desc');
+    description.textContent = descriptionCell?.textContent.trim() || '';
+    leftDiv.append(description);
 
-    const subDesc = document.createElement('p');
-    subDesc.classList.add('left-div-subdesc');
-    subDesc.textContent = sectionSubdescCell.textContent.trim();
-    leftDiv.append(subDesc);
-    centerDiv.append(leftDiv);
+    const subDescription = document.createElement('p');
+    subDescription.classList.add('left-div-subdesc');
+    subDescription.textContent = subDescriptionCell?.textContent.trim() || '';
+    leftDiv.append(subDescription);
 
     const subNavWrap = document.createElement('div');
     subNavWrap.classList.add('sub-nav-wrap', 'about-us-sub-nav');
-    const hierarchyRoot = hierarchyCell.querySelector('ul');
-    if (hierarchyRoot) {
-      // Apply instrumentation before moving children
-      moveInstrumentation(hierarchyCell, hierarchyRoot);
-      subNavWrap.append(hierarchyRoot);
-      transformNestedLists(hierarchyRoot);
-    }
     centerDiv.append(subNavWrap);
+
+    const hierarchyRoot = hierarchyTreeCell?.querySelector('ul');
+    if (hierarchyRoot) {
+      // Create a temporary div to hold the innerHTML and apply classes
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = hierarchyTreeCell.innerHTML;
+      moveInstrumentation(hierarchyTreeCell, tempDiv);
+
+      // Apply classes to the nested elements
+      tempDiv.querySelectorAll('ul').forEach(ul => ul.classList.add('sub-nav-wrap-one-link')); // Example class from ORIGINAL HTML
+      tempDiv.querySelectorAll('li').forEach(liItem => {
+        liItem.classList.add('list-item'); // Example class from ORIGINAL HTML
+        if (liItem.querySelector('ul')) {
+          liItem.classList.add('top-level-li'); // Example class from ORIGINAL HTML
+        }
+      });
+      tempDiv.querySelectorAll('a').forEach(a => a.classList.add('nav-menu-item')); // Example class from ORIGINAL HTML
+
+      // Move the processed content to the subNavWrap
+      while (tempDiv.firstChild) {
+        subNavWrap.append(tempDiv.firstChild);
+      }
+      transformNestedLists(subNavWrap); // Apply the nested list transformation and event listeners
+    }
+
     li.append(megaMenu);
     navUl.append(li);
-
-    moveInstrumentation(row, li); // Move instrumentation from the original row to the new li
-  });
-
-  // Press Release Items (example for newsroom)
-  if (pressReleaseItems.length > 0) {
-    const newsroomLi = navUl.querySelector('li.has-child a[href*="newsroom"]')?.closest('li');
-    if (newsroomLi) {
-      const newsroomLeftDiv = newsroomLi.querySelector('.newsroom-left-div');
-      if (newsroomLeftDiv) {
-        const latestPressReleaseDiv = document.createElement('div');
-        latestPressReleaseDiv.classList.add('latest-two-press-release');
-
-        pressReleaseItems.slice(0, 2).forEach((row) => { // Take first two as per original HTML
-          const cells = [...row.children];
-          const titleCell = cells[0];
-          const linkCell = cells[1];
-          const dateCell = cells[2];
-          const categoryCell = cells[3];
-
-          const slideDiv = document.createElement('div');
-          slideDiv.classList.add('slides');
-          const wrapDiv = document.createElement('div');
-          wrapDiv.classList.add('wrap');
-          slideDiv.append(wrapDiv);
-
-          const contentDiv = document.createElement('div');
-          contentDiv.classList.add('content');
-          wrapDiv.append(contentDiv);
-
-          const descDiv = document.createElement('div');
-          descDiv.classList.add('desc');
-          contentDiv.append(descDiv);
-
-          const p = document.createElement('p');
-          const a = document.createElement('a');
-          a.href = linkCell.querySelector('a')?.href || '#';
-          a.textContent = titleCell.textContent.trim();
-          p.append(a);
-          descDiv.append(p);
-
-          const dateDiv = document.createElement('div');
-          dateDiv.classList.add('date');
-          const emDate = document.createElement('em');
-          emDate.textContent = dateCell.textContent.trim();
-          const emCategory = document.createElement('em');
-          emCategory.textContent = categoryCell.textContent.trim();
-          dateDiv.append(emDate, emCategory);
-          descDiv.append(dateDiv);
-
-          latestPressReleaseDiv.append(slideDiv);
-          moveInstrumentation(row, slideDiv);
-        });
-        newsroomLeftDiv.append(latestPressReleaseDiv);
-      }
-    }
-  }
-
-
-  // Icon Nav (Mobile)
-  const mobileIconNav = document.createElement('div');
-  mobileIconNav.classList.add('icon-nav', 'mobile-menus-icon');
-  const mobileIconUl = document.createElement('ul');
-  mobileIconNav.append(mobileIconUl);
-  navUl.append(mobileIconNav); // Append to navUl for mobile display
-
-  // Contact Links
-  contactLinkItems.forEach((row) => {
-    const cells = [...row.children];
-    const labelCell = cells[0];
-    const linkCell = cells[1];
-    const iconCell = cells[2];
-
-    const li = document.createElement('li');
-    li.classList.add('mail'); // Assuming 'mail' is the class from original HTML
-    const anchor = document.createElement('a');
-    anchor.href = linkCell.querySelector('a')?.href || '#';
-    anchor.textContent = labelCell.textContent.trim();
-
-    const iconPicture = iconCell.querySelector('picture');
-    if (iconPicture) {
-      const iconImg = iconPicture.querySelector('img');
-      const optimizedIcon = createOptimizedPicture(iconImg.src, iconImg.alt, false, [{ width: '24' }]);
-      moveInstrumentation(iconImg, optimizedIcon.querySelector('img'));
-      anchor.prepend(optimizedIcon);
-    }
-    li.append(anchor);
-    mobileIconUl.append(li);
     moveInstrumentation(row, li);
   });
 
-  // Search functionality (mobile and desktop)
-  const createSearchSection = (isMobile) => {
+  // Contact links
+  const mobileMenusIcon = document.createElement('div');
+  mobileMenusIcon.classList.add('icon-nav', 'mobile-menus-icon');
+  const mobileUl = document.createElement('ul');
+  mobileMenusIcon.append(mobileUl);
+
+  contactLinkItems.forEach((row) => {
+    const [linkCell, labelCell, iconCell] = [...row.children];
+
+    const li = document.createElement('li');
+    li.classList.add('mail');
+    const link = document.createElement('a');
+    link.href = linkCell?.querySelector('a')?.href || '#';
+    link.textContent = labelCell?.textContent.trim() || '';
+
+    const iconPicture = iconCell?.querySelector('picture');
+    if (iconPicture) {
+      const iconImg = iconPicture.querySelector('img');
+      const optimizedIcon = createOptimizedPicture(
+        iconImg.src,
+        iconImg.alt,
+        false,
+        [{ width: '24' }],
+      );
+      moveInstrumentation(iconPicture, optimizedIcon.querySelector('img'));
+      link.prepend(optimizedIcon);
+    }
+    li.append(link);
+    mobileUl.append(li);
+    moveInstrumentation(row, li);
+  });
+
+  // Search items
+  searchItems.forEach((row) => {
+    const [
+      iconCell,
+      placeholderCell,
+      submitLabelCell,
+      popularKeywordsLabelCell,
+      recommendedForYouLabelCell,
+      popularKeywordsCell,
+      recommendedKeywordsCell,
+    ] = [...row.children];
+
     const li = document.createElement('li');
     li.classList.add('search');
-    const searchToggleLink = document.createElement('a');
-    searchToggleLink.href = '#';
-    const searchIcon = document.createElement('img');
-    searchIcon.alt = 'svg file';
-    searchIcon.src = '/content/dam/aemigrate/uploaded-folder/image/1776767280747.svg+xml'; // Example path, replace with actual
-    const closeIcon = document.createElement('img');
-    closeIcon.alt = 'svg file';
-    closeIcon.src = '/content/dam/aemigrate/uploaded-folder/image/1776767280787.svg+xml'; // Example path, replace with actual
-    searchToggleLink.append(searchIcon, closeIcon);
 
-    if (isMobile) {
-      const searchSpan = document.createElement('span');
-      searchSpan.textContent = ' Search';
-      searchToggleLink.append(searchSpan);
-      li.classList.add('mobile-search'); // Class from ORIGINAL HTML
+    const searchTrigger = document.createElement('a');
+    searchTrigger.href = '#';
+
+    const searchIconPicture = iconCell?.querySelector('picture');
+    if (searchIconPicture) {
+      const searchIconImg = searchIconPicture.querySelector('img');
+      const optimizedSearchIcon = createOptimizedPicture(
+        searchIconImg.src,
+        searchIconImg.alt,
+        false,
+        [{ width: '24' }],
+      );
+      moveInstrumentation(searchIconPicture, optimizedSearchIcon.querySelector('img'));
+      searchTrigger.append(optimizedSearchIcon);
+      // Assuming there's a second icon for close state, if not, adjust
+      const closeIcon = optimizedSearchIcon.cloneNode(true);
+      searchTrigger.append(closeIcon);
     }
+
+    const searchSpan = document.createElement('span');
+    searchSpan.textContent = ' Search';
+    searchTrigger.append(searchSpan);
+    li.append(searchTrigger);
 
     const searchScreenWrap = document.createElement('div');
     searchScreenWrap.classList.add('search-screen-wrap');
+    const searchWrap = document.createElement('div');
+    searchWrap.classList.add('wrap');
+    searchScreenWrap.append(searchWrap);
 
-    const searchWrapInner = document.createElement('div');
-    searchWrapInner.classList.add('wrap');
-    searchScreenWrap.append(searchWrapInner);
-
-    const searchForm = document.createElement('form');
-    searchForm.action = 'https://www.mahindra.com/search';
-    searchForm.method = 'get';
-    searchForm.id = `search-block-form-${isMobile ? 'mobile' : 'desktop'}`;
+    const form = document.createElement('form');
+    form.action = '/search'; // Example action, adjust if needed
+    form.method = 'get';
+    form.id = 'search-block-form'; // From ORIGINAL HTML
+    searchWrap.append(form);
 
     const searchInputWrap = document.createElement('div');
     searchInputWrap.classList.add('search-wrap');
-    const searchInputIcon = document.createElement('div');
-    searchInputIcon.classList.add('search-icon');
-    const searchInputImg = document.createElement('img');
-    searchInputImg.alt = 'svg file';
-    searchInputImg.src = '/content/dam/aemigrate/uploaded-folder/image/1776767280834.svg+xml'; // Example path
-    searchInputIcon.append(searchInputImg);
-    searchInputWrap.append(searchInputIcon);
+    form.append(searchInputWrap);
+
+    const searchIconDiv = document.createElement('div');
+    searchIconDiv.classList.add('search-icon');
+    if (searchIconPicture) {
+      const searchIconImg = searchIconPicture.querySelector('img');
+      const optimizedSearchIcon = createOptimizedPicture(
+        searchIconImg.src,
+        searchIconImg.alt,
+        false,
+        [{ width: '24' }],
+      );
+      moveInstrumentation(searchIconPicture, optimizedSearchIcon.querySelector('img'));
+      searchIconDiv.append(optimizedSearchIcon);
+    }
+    searchInputWrap.append(searchIconDiv);
 
     const searchInput = document.createElement('input');
     searchInput.type = 'text';
     searchInput.classList.add('input-text', 'searchtext');
     searchInput.required = true;
     searchInput.name = 'key';
-    searchInput.id = `searchInput-${isMobile ? 'mobile' : 'desktop'}`;
+    searchInput.id = 'searchInput';
     searchInput.autocomplete = 'off';
+    searchInput.placeholder = placeholderCell?.textContent.trim() || '';
     searchInputWrap.append(searchInput);
 
     const submitButton = document.createElement('button');
     submitButton.classList.add('submit-button');
     const submitLabel = document.createElement('div');
     submitLabel.classList.add('label');
-    submitLabel.textContent = ' Submit ';
-    const submitImg = document.createElement('img');
-    submitImg.alt = 'svg file';
-    submitImg.src = '/content/dam/aemigrate/uploaded-folder/image/1776767280876.svg+xml'; // Example path
-    submitButton.append(submitLabel, submitImg);
+    submitLabel.textContent = submitLabelCell?.textContent.trim() || 'Submit';
+    submitButton.append(submitLabel);
+    // Assuming an icon for submit button, if not, remove
+    if (searchIconPicture) {
+      const searchIconImg = searchIconPicture.querySelector('img');
+      const optimizedSearchIcon = createOptimizedPicture(
+        searchIconImg.src,
+        searchIconImg.alt,
+        false,
+        [{ width: '24' }],
+      );
+      moveInstrumentation(searchIconPicture, optimizedSearchIcon.querySelector('img'));
+      submitButton.append(optimizedSearchIcon.cloneNode(true));
+    }
     searchInputWrap.append(submitButton);
-    searchForm.append(searchInputWrap);
-    searchWrapInner.append(searchForm);
 
     const searchResultBox = document.createElement('div');
     searchResultBox.classList.add('searchResultBox');
-    searchResultBox.style.display = 'none'; // Hidden by default
-    searchWrapInner.append(searchResultBox);
+    searchResultBox.style.display = 'none'; // Initially hidden
+    form.append(searchResultBox);
 
-    const popularSuggestionsWrap = document.createElement('div');
-    popularSuggestionsWrap.classList.add('search-suggestions-wrap'); // Class from ORIGINAL HTML
+    const popularKeywordsWrap = document.createElement('div');
+    popularKeywordsWrap.classList.add('search-suggestions-wrap');
     const popularLabel = document.createElement('div');
     popularLabel.classList.add('label');
-    popularLabel.textContent = 'Popular Keywords:';
-    popularSuggestionsWrap.append(popularLabel);
+    popularLabel.textContent = popularKeywordsLabelCell?.textContent.trim() || 'Popular Keywords:';
+    popularKeywordsWrap.append(popularLabel);
     const popularTokensWrap = document.createElement('div');
     popularTokensWrap.classList.add('tokens-wrap');
-    const popularUl = document.createElement('ul');
-    popularTokensWrap.append(popularUl);
-    popularSuggestionsWrap.append(popularTokensWrap);
-    searchWrapInner.append(popularSuggestionsWrap);
+    popularTokensWrap.innerHTML = popularKeywordsCell?.innerHTML || '';
+    popularKeywordsWrap.append(popularTokensWrap);
+    searchWrap.append(popularKeywordsWrap);
 
-    const recommendedSuggestionsWrap = document.createElement('div');
-    recommendedSuggestionsWrap.classList.add('search-suggestions-wrap'); // Class from ORIGINAL HTML
+    const recommendedKeywordsWrap = document.createElement('div');
+    recommendedKeywordsWrap.classList.add('search-suggestions-wrap');
     const recommendedLabel = document.createElement('div');
     recommendedLabel.classList.add('label');
-    recommendedLabel.textContent = 'Recommended for you:';
-    recommendedSuggestionsWrap.append(recommendedLabel);
+    recommendedLabel.textContent =
+      recommendedForYouLabelCell?.textContent.trim() || 'Recommended for you:';
+    recommendedKeywordsWrap.append(recommendedLabel);
     const recommendedTokensWrap = document.createElement('div');
     recommendedTokensWrap.classList.add('tokens-wrap');
-    const recommendedUl = document.createElement('ul');
-    recommendedTokensWrap.append(recommendedUl);
-    recommendedSuggestionsWrap.append(recommendedTokensWrap);
-    searchWrapInner.append(recommendedSuggestionsWrap);
+    recommendedTokensWrap.innerHTML = recommendedKeywordsCell?.innerHTML || '';
+    recommendedKeywordsWrap.append(recommendedTokensWrap);
+    searchWrap.append(recommendedKeywordsWrap);
 
-    // Populate search suggestions
-    searchSuggestionItems.forEach((row, index) => {
-      const suggestionText = [...row.children][0]?.textContent.trim(); // Access cell by index
-      if (suggestionText) {
-        const suggestionLi = document.createElement('li');
-        suggestionLi.textContent = suggestionText;
-        // Distribute suggestions based on model (Popular vs Recommended)
-        // Assuming the first 'search-suggestions-popular' items come first, then 'search-suggestions-recommended'
-        // This is a heuristic based on the model structure, adjust if needed.
-        if (index < 6) { // Heuristic: first 6 are popular, rest are recommended
-          popularUl.append(suggestionLi);
-        } else {
-          recommendedUl.append(suggestionLi);
-        }
-      }
-      moveInstrumentation(row, suggestionLi);
-    });
+    li.append(searchScreenWrap);
+    mobileUl.append(li);
+    moveInstrumentation(row, li);
 
-    li.append(searchToggleLink, searchScreenWrap);
-
-    // Event listener for search toggle
-    searchToggleLink.addEventListener('click', (e) => {
+    searchTrigger.addEventListener('click', (e) => {
       e.preventDefault();
-      e.stopPropagation();
       searchScreenWrap.classList.toggle('show');
       li.classList.toggle('active');
     });
-
     searchScreenWrap.addEventListener('click', (e) => {
       if (e.target === searchScreenWrap) {
         searchScreenWrap.classList.remove('show');
         li.classList.remove('active');
       }
     });
+  });
 
-    return li;
-  };
+  navUl.append(mobileMenusIcon);
 
-  mobileIconUl.append(createSearchSection(true)); // Mobile search
+  // Desktop contact and search icons
+  const desktopMenusIcon = document.createElement('div');
+  desktopMenusIcon.classList.add('icon-nav', 'desktop-menus-icon');
+  const desktopUl = document.createElement('ul');
+  desktopMenusIcon.append(desktopUl);
 
-  // Icon Nav (Desktop)
-  const desktopIconNav = document.createElement('div');
-  desktopIconNav.classList.add('icon-nav', 'desktop-menus-icon');
-  const desktopIconUl = document.createElement('ul');
-  desktopIconNav.append(desktopIconUl);
-  nav.append(desktopIconNav); // Append to nav for desktop display
-
-  // Contact Links for Desktop
+  // Re-use contactLinkItems for desktop
   contactLinkItems.forEach((row) => {
-    const cells = [...row.children];
-    const labelCell = cells[0];
-    const linkCell = cells[1];
-    const iconCell = cells[2];
+    const [linkCell, labelCell, iconCell] = [...row.children];
 
     const li = document.createElement('li');
     li.classList.add('mail');
-    const anchor = document.createElement('a');
-    anchor.href = linkCell.querySelector('a')?.href || '#';
-    // Desktop contact link does not have label text, only icon as per original HTML
-    // anchor.textContent = labelCell.textContent.trim(); // Removed as per original HTML
+    const link = document.createElement('a');
+    link.href = linkCell?.querySelector('a')?.href || '#';
 
-    const iconPicture = iconCell.querySelector('picture');
+    const iconPicture = iconCell?.querySelector('picture');
     if (iconPicture) {
       const iconImg = iconPicture.querySelector('img');
-      const optimizedIcon = createOptimizedPicture(iconImg.src, iconImg.alt, false, [{ width: '24' }]);
-      moveInstrumentation(iconImg, optimizedIcon.querySelector('img'));
-      anchor.append(optimizedIcon);
+      const optimizedIcon = createOptimizedPicture(
+        iconImg.src,
+        iconImg.alt,
+        false,
+        [{ width: '24' }],
+      );
+      moveInstrumentation(iconPicture, optimizedIcon.querySelector('img'));
+      link.append(optimizedIcon);
     }
-    li.append(anchor);
-    desktopIconUl.append(li);
+    li.append(link);
+    desktopUl.append(li);
     moveInstrumentation(row, li);
   });
 
-  desktopIconUl.append(createSearchSection(false)); // Desktop search
+  // Re-use searchItems for desktop
+  searchItems.forEach((row) => {
+    const [
+      iconCell,
+      placeholderCell,
+      submitLabelCell,
+      popularKeywordsLabelCell,
+      recommendedForYouLabelCell,
+      popularKeywordsCell,
+      recommendedKeywordsCell,
+    ] = [...row.children];
+
+    const li = document.createElement('li');
+    li.classList.add('search');
+
+    const searchTrigger = document.createElement('a');
+    searchTrigger.href = '#';
+
+    const searchIconPicture = iconCell?.querySelector('picture');
+    if (searchIconPicture) {
+      const searchIconImg = searchIconPicture.querySelector('img');
+      const optimizedSearchIcon = createOptimizedPicture(
+        searchIconImg.src,
+        searchIconImg.alt,
+        false,
+        [{ width: '24' }],
+      );
+      moveInstrumentation(searchIconPicture, optimizedSearchIcon.querySelector('img'));
+      searchTrigger.append(optimizedSearchIcon);
+      const closeIcon = optimizedSearchIcon.cloneNode(true);
+      searchTrigger.append(closeIcon);
+    }
+    li.append(searchTrigger);
+
+    const searchScreenWrap = document.createElement('div');
+    searchScreenWrap.classList.add('search-screen-wrap');
+    const searchWrap = document.createElement('div');
+    searchWrap.classList.add('wrap');
+    searchScreenWrap.append(searchWrap);
+
+    const form = document.createElement('form');
+    form.action = '/search';
+    form.method = 'get';
+    form.id = 'search-block-form'; // From ORIGINAL HTML
+    searchWrap.append(form);
+
+    const searchInputWrap = document.createElement('div');
+    searchInputWrap.classList.add('search-wrap');
+    form.append(searchInputWrap);
+
+    const searchIconDiv = document.createElement('div');
+    searchIconDiv.classList.add('search-icon');
+    if (searchIconPicture) {
+      const searchIconImg = searchIconPicture.querySelector('img');
+      const optimizedSearchIcon = createOptimizedPicture(
+        searchIconImg.src,
+        searchIconImg.alt,
+        false,
+        [{ width: '24' }],
+      );
+      moveInstrumentation(searchIconPicture, optimizedSearchIcon.querySelector('img'));
+      searchIconDiv.append(optimizedSearchIcon);
+    }
+    searchInputWrap.append(searchIconDiv);
+
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.classList.add('input-text', 'searchtext');
+    searchInput.required = true;
+    searchInput.name = 'key';
+    searchInput.id = 'searchInputDesktop';
+    searchInput.autocomplete = 'off';
+    searchInput.placeholder = placeholderCell?.textContent.trim() || '';
+    searchInputWrap.append(searchInput);
+
+    const submitButton = document.createElement('button');
+    submitButton.classList.add('submit-button');
+    const submitLabel = document.createElement('div');
+    submitLabel.classList.add('label');
+    submitLabel.textContent = submitLabelCell?.textContent.trim() || 'Submit';
+    submitButton.append(submitLabel);
+    if (searchIconPicture) {
+      const searchIconImg = searchIconPicture.querySelector('img');
+      const optimizedSearchIcon = createOptimizedPicture(
+        searchIconImg.src,
+        searchIconImg.alt,
+        false,
+        [{ width: '24' }],
+      );
+      moveInstrumentation(searchIconPicture, optimizedSearchIcon.querySelector('img'));
+      submitButton.append(optimizedSearchIcon.cloneNode(true));
+    }
+    searchInputWrap.append(submitButton);
+
+    const searchResultBox = document.createElement('div');
+    searchResultBox.classList.add('searchResultBox');
+    searchResultBox.style.display = 'none';
+    form.append(searchResultBox);
+
+    const popularKeywordsWrap = document.createElement('div');
+    popularKeywordsWrap.classList.add('search-suggestions-wrap');
+    const popularLabel = document.createElement('div');
+    popularLabel.classList.add('label');
+    popularLabel.textContent = popularKeywordsLabelCell?.textContent.trim() || 'Popular Keywords:';
+    popularKeywordsWrap.append(popularLabel);
+    const popularTokensWrap = document.createElement('div');
+    popularTokensWrap.classList.add('tokens-wrap');
+    popularTokensWrap.innerHTML = popularKeywordsCell?.innerHTML || '';
+    popularKeywordsWrap.append(popularTokensWrap);
+    searchWrap.append(popularKeywordsWrap);
+
+    const recommendedKeywordsWrap = document.createElement('div');
+    recommendedKeywordsWrap.classList.add('search-suggestions-wrap');
+    const recommendedLabel = document.createElement('div');
+    recommendedLabel.classList.add('label');
+    recommendedLabel.textContent =
+      recommendedForYouLabelCell?.textContent.trim() || 'Recommended for you:';
+    recommendedKeywordsWrap.append(recommendedLabel);
+    const recommendedTokensWrap = document.createElement('div');
+    recommendedTokensWrap.classList.add('tokens-wrap');
+    recommendedTokensWrap.innerHTML = recommendedKeywordsCell?.innerHTML || '';
+    recommendedKeywordsWrap.append(recommendedTokensWrap);
+    searchWrap.append(recommendedKeywordsWrap);
+
+    li.append(searchScreenWrap);
+    desktopUl.append(li);
+    moveInstrumentation(row, li);
+
+    searchTrigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      searchScreenWrap.classList.toggle('show');
+      li.classList.toggle('active');
+    });
+    searchScreenWrap.addEventListener('click', (e) => {
+      if (e.target === searchScreenWrap) {
+        searchScreenWrap.classList.remove('show');
+        li.classList.remove('active');
+      }
+    });
+  });
+
+  navUl.append(desktopMenusIcon);
+
+  // Press Release items (added missing logic)
+  if (pressReleaseItems.length > 0) {
+    const newsroomLi = navUl.querySelector('.newsroom-left-div')?.closest('li');
+    if (newsroomLi) {
+      const latestTwoPressReleaseDiv = newsroomLi.querySelector('.latest-two-press-release');
+      if (latestTwoPressReleaseDiv) {
+        pressReleaseItems.forEach((row) => {
+          const [
+            linkCell,
+            titleCell,
+            dateCell,
+            categoryCell,
+          ] = [...row.children];
+
+          const slidesDiv = document.createElement('div');
+          slidesDiv.classList.add('slides');
+          const slideWrap = document.createElement('div');
+          slideWrap.classList.add('wrap');
+          slidesDiv.append(slideWrap);
+
+          const contentDiv = document.createElement('div');
+          contentDiv.classList.add('content');
+          slideWrap.append(contentDiv);
+
+          const descDiv = document.createElement('div');
+          descDiv.classList.add('desc');
+          contentDiv.append(descDiv);
+
+          const titleP = document.createElement('p');
+          const titleLink = document.createElement('a');
+          titleLink.href = linkCell?.querySelector('a')?.href || '#';
+          titleLink.textContent = titleCell?.textContent.trim() || '';
+          titleP.append(titleLink);
+          descDiv.append(titleP);
+
+          const dateDiv = document.createElement('div');
+          dateDiv.classList.add('date');
+          const dateEm = document.createElement('em');
+          dateEm.textContent = dateCell?.textContent.trim() || '';
+          const categoryEm = document.createElement('em');
+          categoryEm.textContent = categoryCell?.textContent.trim() || '';
+          dateDiv.append(dateEm, categoryEm);
+          descDiv.append(dateDiv);
+
+          latestTwoPressReleaseDiv.append(slidesDiv);
+          moveInstrumentation(row, slidesDiv);
+        });
+      }
+    }
+  }
 
   // 80th Year Logo
   const year80LogoDiv = document.createElement('div');
   year80LogoDiv.classList.add('logo', 'year-80-logo');
-  const year80LogoAnchor = document.createElement('a');
-  year80LogoAnchor.href = year80LogoLinkRow?.querySelector('a')?.href || '#';
+  const year80LogoLink = document.createElement('a');
+  year80LogoLink.href = year80LogoLinkRow?.querySelector('a')?.href || '#';
   const year80LogoPicture = year80LogoRow?.querySelector('picture');
   if (year80LogoPicture) {
-    const img = year80LogoPicture.querySelector('img');
-    const optimizedPic = createOptimizedPicture(img.src, img.alt, false, [{ width: '74' }]);
-    optimizedPic.querySelector('img').classList.add('hiddenlogo1', 'years-80');
-    moveInstrumentation(img, optimizedPic.querySelector('img'));
-    year80LogoAnchor.append(optimizedPic);
+    const year80LogoImg = year80LogoPicture.querySelector('img');
+    const optimizedYear80Logo = createOptimizedPicture(
+      year80LogoImg.src,
+      year80LogoImg.alt,
+      false,
+      [{ width: '74' }],
+    );
+    optimizedYear80Logo.querySelector('img').classList.add('hiddenlogo1', 'years-80');
+    moveInstrumentation(year80LogoPicture, optimizedYear80Logo.querySelector('img'));
+    year80LogoLink.append(optimizedYear80Logo);
   }
-  year80LogoDiv.append(year80LogoAnchor);
-  if (year80LogoRow) moveInstrumentation(year80LogoRow, year80LogoDiv);
-  if (year80LogoLinkRow) moveInstrumentation(year80LogoLinkRow, year80LogoAnchor);
+  moveInstrumentation(year80LogoRow, year80LogoLink);
+  year80LogoDiv.append(year80LogoLink);
   wrap.append(year80LogoDiv);
 
   block.append(header);
 
-  // Hamburger menu toggle
+  // Hamburger menu toggle logic
   hamburger.addEventListener('click', () => {
     nav.classList.toggle('active');
     hamburger.classList.toggle('active');
+    document.body.classList.toggle('no-scroll');
   });
 
   // Optimize all images within the block
@@ -490,3 +665,4 @@ export default function decorate(block) {
     img.closest('picture').replaceWith(optimizedPic);
   });
 }
+

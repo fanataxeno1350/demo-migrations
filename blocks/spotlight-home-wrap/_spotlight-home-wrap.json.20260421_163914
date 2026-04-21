@@ -32,15 +32,15 @@
       }
     },
     {
-      "title": "Quick Link",
-      "id": "quick-link",
+      "title": "Quick Link Item",
+      "id": "quick-link-item",
       "plugins": {
         "xwalk": {
           "page": {
             "resourceType": "core/franklin/components/block/v1/block/item",
             "template": {
-              "model": "quick-link",
-              "name": "Quick Link"
+              "model": "quick-link-item",
+              "name": "Quick Link Item"
             }
           }
         }
@@ -59,7 +59,7 @@
         },
         {
           "component": "container",
-          "item": "quick-link",
+          "item": "quick-link-item",
           "label": "Quick Links",
           "name": "quickLinks"
         }
@@ -70,7 +70,7 @@
       "fields": [
         {
           "component": "reference",
-          "label": "Image",
+          "label": "Main Image",
           "name": "image",
           "valueType": "string"
         },
@@ -113,7 +113,7 @@
       ]
     },
     {
-      "id": "quick-link",
+      "id": "quick-link-item",
       "fields": [
         {
           "component": "aem-content",
@@ -135,7 +135,7 @@
       "id": "spotlight-home-wrap",
       "components": [
         "spotlight-slide",
-        "quick-link"
+        "quick-link-item"
       ]
     }
   ]

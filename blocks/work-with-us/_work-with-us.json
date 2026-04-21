@@ -38,7 +38,7 @@
       "fields": [
         {
           "component": "text",
-          "label": "Block Heading",
+          "label": "Heading",
           "name": "heading",
           "valueType": "string"
         },
@@ -62,7 +62,7 @@
         {
           "component": "text",
           "label": "Image Alt Text",
-          "name": "altText",
+          "name": "alt",
           "valueType": "string"
         },
         {

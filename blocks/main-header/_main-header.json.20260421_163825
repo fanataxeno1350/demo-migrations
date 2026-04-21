@@ -32,6 +32,21 @@
       }
     },
     {
+      "title": "Press-Release-Item",
+      "id": "press-release-item",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "model": "press-release-item",
+              "name": "Press-Release-Item"
+            }
+          }
+        }
+      }
+    },
+    {
       "title": "Contact-Link-Item",
       "id": "contact-link-item",
       "plugins": {
@@ -47,30 +62,15 @@
       }
     },
     {
-      "title": "Search-Item",
-      "id": "search-item",
+      "title": "Search-Suggestion-Item",
+      "id": "search-suggestion-item",
       "plugins": {
         "xwalk": {
           "page": {
             "resourceType": "core/franklin/components/block/v1/block/item",
             "template": {
-              "model": "search-item",
-              "name": "Search-Item"
-            }
-          }
-        }
-      }
-    },
-    {
-      "title": "Press-Release-Item",
-      "id": "press-release-item",
-      "plugins": {
-        "xwalk": {
-          "page": {
-            "resourceType": "core/franklin/components/block/v1/block/item",
-            "template": {
-              "model": "press-release-item",
-              "name": "Press-Release-Item"
+              "model": "search-suggestion-item",
+              "name": "Search-Suggestion-Item"
             }
           }
         }
@@ -83,51 +83,57 @@
       "fields": [
         {
           "component": "reference",
-          "label": "Main Logo",
-          "name": "mainLogo",
+          "label": "Logo",
+          "name": "logo",
           "valueType": "string"
         },
         {
           "component": "aem-content",
-          "label": "Main Logo Link",
-          "name": "mainLogoLink",
+          "label": "Logo Link",
+          "name": "logo-link",
           "valueType": "string"
         },
         {
           "component": "reference",
           "label": "80th Year Logo",
-          "name": "year80Logo",
+          "name": "year-80-logo",
           "valueType": "string"
         },
         {
           "component": "aem-content",
           "label": "80th Year Logo Link",
-          "name": "year80LogoLink",
+          "name": "year-80-logo-link",
           "valueType": "string"
         },
         {
           "component": "container",
           "item": "navigation-item",
           "label": "Navigation Menu",
-          "name": "navigationMenu"
-        },
-        {
-          "component": "container",
-          "item": "contact-link-item",
-          "label": "Contact Links",
-          "name": "contactLinks"
-        },
-        {
-          "component": "container",
-          "item": "search-item",
-          "label": "Search Items",
-          "name": "searchItems"
+          "name": "navigation-menu"
         },
         {
           "component": "container",
           "item": "press-release-item",
           "label": "Latest Press Releases",
-          "name": "latestPressReleases"
+          "name": "press-releases"
+        },
+        {
+          "component": "container",
+          "item": "contact-link-item",
+          "label": "Contact Links",
+          "name": "contact-links"
+        },
+        {
+          "component": "container",
+          "item": "search-suggestion-item",
+          "label": "Search Suggestions - Popular",
+          "name": "search-suggestions-popular"
+        },
+        {
+          "component": "container",
+          "item": "search-suggestion-item",
+          "label": "Search Suggestions - Recommended",
+          "name": "search-suggestions-recommended"
         }
       ]
     },
@@ -160,90 +166,20 @@
         },
         {
           "component": "text",
-          "label": "Mega Menu Heading",
-          "name": "heading",
+          "label": "Section Heading",
+          "name": "section-heading",
           "valueType": "string"
         },
         {
           "component": "text",
-          "label": "Mega Menu Description",
-          "name": "description",
+          "label": "Section Description",
+          "name": "section-desc",
           "valueType": "string"
         },
         {
           "component": "text",
-          "label": "Mega Menu Subdescription",
-          "name": "subDescription",
-          "valueType": "string"
-        }
-      ]
-    },
-    {
-      "id": "contact-link-item",
-      "fields": [
-        {
-          "component": "aem-content",
-          "label": "Link",
-          "name": "link",
-          "valueType": "string"
-        },
-        {
-          "component": "text",
-          "label": "Link Label",
-          "name": "label",
-          "valueType": "string"
-        },
-        {
-          "component": "reference",
-          "label": "Icon",
-          "name": "icon",
-          "valueType": "string"
-        }
-      ]
-    },
-    {
-      "id": "search-item",
-      "fields": [
-        {
-          "component": "reference",
-          "label": "Search Icon",
-          "name": "icon",
-          "valueType": "string"
-        },
-        {
-          "component": "text",
-          "label": "Search Input Placeholder",
-          "name": "placeholder",
-          "valueType": "string"
-        },
-        {
-          "component": "text",
-          "label": "Search Submit Label",
-          "name": "submitLabel",
-          "valueType": "string"
-        },
-        {
-          "component": "text",
-          "label": "Popular Keywords Label",
-          "name": "popularKeywordsLabel",
-          "valueType": "string"
-        },
-        {
-          "component": "text",
-          "label": "Recommended For You Label",
-          "name": "recommendedForYouLabel",
-          "valueType": "string"
-        },
-        {
-          "component": "richtext",
-          "label": "Popular Keywords",
-          "name": "popularKeywords",
-          "valueType": "string"
-        },
-        {
-          "component": "richtext",
-          "label": "Recommended Keywords",
-          "name": "recommendedKeywords",
+          "label": "Section Subdescription",
+          "name": "section-subdesc",
           "valueType": "string"
         }
       ]
@@ -252,6 +188,12 @@
       "id": "press-release-item",
       "fields": [
         {
+          "component": "text",
+          "label": "Press Release Title",
+          "name": "title",
+          "valueType": "string"
+        },
+        {
           "component": "aem-content",
           "label": "Press Release Link",
           "name": "link",
@@ -259,20 +201,48 @@
         },
         {
           "component": "text",
-          "label": "Press Release Title",
-          "name": "title",
-          "valueType": "string"
-        },
-        {
-          "component": "date-time",
-          "label": "Press Release Date",
+          "label": "Date",
           "name": "date",
           "valueType": "string"
         },
         {
           "component": "text",
-          "label": "Press Release Category",
+          "label": "Category",
           "name": "category",
+          "valueType": "string"
+        }
+      ]
+    },
+    {
+      "id": "contact-link-item",
+      "fields": [
+        {
+          "component": "text",
+          "label": "Contact Link Label",
+          "name": "label",
+          "valueType": "string"
+        },
+        {
+          "component": "aem-content",
+          "label": "Contact Link URL",
+          "name": "link",
+          "valueType": "string"
+        },
+        {
+          "component": "reference",
+          "label": "Contact Icon",
+          "name": "icon",
+          "valueType": "string"
+        }
+      ]
+    },
+    {
+      "id": "search-suggestion-item",
+      "fields": [
+        {
+          "component": "text",
+          "label": "Suggestion Text",
+          "name": "suggestion",
           "valueType": "string"
         }
       ]
@@ -283,9 +253,9 @@
       "id": "main-header",
       "components": [
         "navigation-item",
+        "press-release-item",
         "contact-link-item",
-        "search-item",
-        "press-release-item"
+        "search-suggestion-item"
       ]
     }
   ]

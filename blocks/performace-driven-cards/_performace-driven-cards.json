@@ -1,31 +1,31 @@
 {
   "definitions": [
     {
-      "title": "Spirit-of-Rise",
-      "id": "spirit-of-rise",
+      "title": "Performace-Driven-Cards",
+      "id": "performace-driven-cards",
       "plugins": {
         "xwalk": {
           "page": {
             "resourceType": "core/franklin/components/block/v1/block",
             "template": {
-              "filter": "spirit-of-rise",
-              "model": "spirit-of-rise",
-              "name": "Spirit-of-Rise"
+              "filter": "performace-driven-cards",
+              "model": "performace-driven-cards",
+              "name": "Performace-Driven-Cards"
             }
           }
         }
       }
     },
     {
-      "title": "Performace-Driven-Card",
-      "id": "performace-driven-card",
+      "title": "Performace-Driven-Card-Item",
+      "id": "performace-driven-card-item",
       "plugins": {
         "xwalk": {
           "page": {
             "resourceType": "core/franklin/components/block/v1/block/item",
             "template": {
-              "model": "performace-driven-card",
-              "name": "Performace-Driven-Card"
+              "model": "performace-driven-card-item",
+              "name": "Performace-Driven-Card-Item"
             }
           }
         }
@@ -34,30 +34,18 @@
   ],
   "models": [
     {
-      "id": "spirit-of-rise",
+      "id": "performace-driven-cards",
       "fields": [
         {
-          "component": "text",
-          "label": "Heading",
-          "name": "heading",
-          "valueType": "string"
-        },
-        {
-          "component": "text",
-          "label": "Description",
-          "name": "description",
-          "valueType": "string"
-        },
-        {
           "component": "container",
-          "item": "performace-driven-card",
+          "item": "performace-driven-card-item",
           "label": "Cards",
           "name": "cards"
         }
       ]
     },
     {
-      "id": "performace-driven-card",
+      "id": "performace-driven-card-item",
       "fields": [
         {
           "component": "aem-content",
@@ -73,7 +61,7 @@
         },
         {
           "component": "text",
-          "label": "Card Description",
+          "label": "Description",
           "name": "description",
           "valueType": "string"
         }
@@ -82,9 +70,9 @@
   ],
   "filters": [
     {
-      "id": "spirit-of-rise",
+      "id": "performace-driven-cards",
       "components": [
-        "performace-driven-card"
+        "performace-driven-card-item"
       ]
     }
   ]
