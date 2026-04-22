@@ -1,0 +1,259 @@
+{
+  "definitions": [
+    {
+      "title": "Latest-Stories",
+      "id": "latest-stories",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block",
+            "template": {
+              "filter": "latest-stories",
+              "model": "latest-stories",
+              "name": "Latest-Stories"
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "Twitter-Feed-Item",
+      "id": "twitter-feed-item",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "model": "twitter-feed-item",
+              "name": "Twitter-Feed-Item"
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "Story-Card-Item",
+      "id": "story-card-item",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "model": "story-card-item",
+              "name": "Story-Card-Item"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "latest-stories",
+      "fields": [
+        {
+          "component": "text",
+          "label": "Heading",
+          "name": "heading",
+          "valueType": "string"
+        },
+        {
+          "component": "container",
+          "item": "twitter-feed-item",
+          "label": "Twitter Feed",
+          "name": "twitterFeed"
+        },
+        {
+          "component": "container",
+          "item": "story-card-item",
+          "label": "Story Cards",
+          "name": "storyCards"
+        }
+      ]
+    },
+    {
+      "id": "twitter-feed-item",
+      "fields": [
+        {
+          "component": "reference",
+          "label": "Profile Banner Image",
+          "name": "profileBannerImage",
+          "valueType": "string"
+        },
+        {
+          "component": "reference",
+          "label": "Profile Image",
+          "name": "profileImage",
+          "valueType": "string"
+        },
+        {
+          "component": "text",
+          "label": "Profile Name",
+          "name": "profileName",
+          "valueType": "string"
+        },
+        {
+          "component": "text",
+          "label": "Profile Screen Name",
+          "name": "profileScreenName",
+          "valueType": "string"
+        },
+        {
+          "component": "aem-content",
+          "label": "Profile Link",
+          "name": "profileLink",
+          "valueType": "string"
+        },
+        {
+          "component": "boolean",
+          "label": "Is Verified",
+          "name": "isVerified"
+        },
+        {
+          "component": "number",
+          "label": "Posts Count",
+          "name": "postsCount",
+          "valueType": "number"
+        },
+        {
+          "component": "number",
+          "label": "Following Count",
+          "name": "followingCount",
+          "valueType": "number"
+        },
+        {
+          "component": "number",
+          "label": "Followers Count",
+          "name": "followersCount",
+          "valueType": "number"
+        },
+        {
+          "component": "container",
+          "item": "twitter-feed-post-item",
+          "label": "Posts",
+          "name": "posts"
+        }
+      ]
+    },
+    {
+      "id": "twitter-feed-post-item",
+      "fields": [
+        {
+          "component": "reference",
+          "label": "User Profile Image",
+          "name": "userProfileImage",
+          "valueType": "string"
+        },
+        {
+          "component": "text",
+          "label": "User Name",
+          "name": "userName",
+          "valueType": "string"
+        },
+        {
+          "component": "text",
+          "label": "User Screen Name",
+          "name": "userScreenName",
+          "valueType": "string"
+        },
+        {
+          "component": "boolean",
+          "label": "User Is Verified",
+          "name": "userIsVerified"
+        },
+        {
+          "component": "text",
+          "label": "Post Date",
+          "name": "postDate",
+          "valueType": "string"
+        },
+        {
+          "component": "richtext",
+          "label": "Post Text",
+          "name": "postText",
+          "valueType": "string"
+        },
+        {
+          "component": "aem-content",
+          "label": "Post Link",
+          "name": "postLink",
+          "valueType": "string"
+        },
+        {
+          "component": "reference",
+          "label": "Media Image 1",
+          "name": "mediaImage1",
+          "valueType": "string"
+        },
+        {
+          "component": "reference",
+          "label": "Media Image 2",
+          "name": "mediaImage2",
+          "valueType": "string"
+        },
+        {
+          "component": "reference",
+          "label": "Media Image 3",
+          "name": "mediaImage3",
+          "valueType": "string"
+        },
+        {
+          "component": "number",
+          "label": "Repost Count",
+          "name": "repostCount",
+          "valueType": "number"
+        },
+        {
+          "component": "number",
+          "label": "Like Count",
+          "name": "likeCount",
+          "valueType": "number"
+        }
+      ]
+    },
+    {
+      "id": "story-card-item",
+      "fields": [
+        {
+          "component": "reference",
+          "label": "Image",
+          "name": "image",
+          "valueType": "string"
+        },
+        {
+          "component": "text",
+          "label": "Category",
+          "name": "category",
+          "valueType": "string"
+        },
+        {
+          "component": "text",
+          "label": "Text",
+          "name": "text",
+          "valueType": "string"
+        },
+        {
+          "component": "aem-content",
+          "label": "Link",
+          "name": "link",
+          "valueType": "string"
+        },
+        {
+          "component": "text",
+          "label": "Date",
+          "name": "date",
+          "valueType": "string"
+        }
+      ]
+    }
+  ],
+  "filters": [
+    {
+      "id": "latest-stories",
+      "components": [
+        "twitter-feed-item",
+        "story-card-item"
+      ]
+    }
+  ]
+}

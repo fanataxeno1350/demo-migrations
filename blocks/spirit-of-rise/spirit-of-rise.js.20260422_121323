@@ -1,0 +1,139 @@
+import { createOptimizedPicture } from '../../scripts/aem.js';
+import { moveInstrumentation } from '../../scripts/scripts.js';
+
+export default function decorate(block) {
+  const sections = [];
+  const cards = [];
+
+  // Separate section and card rows based on content detection
+  [...block.children].forEach((row) => {
+    const cells = [...row.children];
+    // A section row has 3 cells, where the first cell does NOT contain a picture.
+    // A card row has 3 cells, where the first cell DOES contain a picture.
+    if (cells.length === 3) {
+      if (cells[0].querySelector('picture')) {
+        cards.push(row); // This is a card row
+      } else {
+        sections.push(row); // This is a section row
+      }
+    }
+  });
+
+  // Group cards by section
+  const groupedSections = [];
+  let currentCardIndex = 0;
+
+  sections.forEach((sectionRow) => {
+    const cells = [...sectionRow.children];
+    const headingCell = cells[0];
+    const descriptionCell = cells[1];
+
+    const section = {
+      heading: headingCell.textContent.trim(),
+      description: descriptionCell.textContent.trim(),
+      cards: [],
+    };
+
+    // For this specific block, the original HTML shows 3 cards per section.
+    // We'll take the next 3 card rows from the `cards` array.
+    for (let i = 0; i < 3 && currentCardIndex < cards.length; i += 1) {
+      const cardRow = cards[currentCardIndex];
+      const cardCells = [...cardRow.children];
+      const imageCell = cardCells[0];
+      const linkCell = cardCells[1];
+      const descriptionCellCard = cardCells[2];
+
+      const picture = imageCell.querySelector('picture');
+      const img = picture ? picture.querySelector('img') : null;
+      const optimizedPic = img ? createOptimizedPicture(img.src, img.alt, false, [{ width: '750' }]) : null;
+
+      const cardLink = linkCell.querySelector('a');
+      const card = {
+        image: optimizedPic,
+        link: cardLink ? cardLink.href : '#',
+        description: descriptionCellCard.textContent.trim(),
+        instrumentationSource: cardRow, // Keep track for instrumentation
+      };
+      section.cards.push(card);
+      currentCardIndex += 1;
+    }
+    groupedSections.push(section);
+  });
+
+  block.innerHTML = ''; // Clear the block content
+
+  groupedSections.forEach((sectionData, index) => {
+    const sectionEl = document.createElement('section');
+    sectionEl.classList.add('section', 'spirit-of-rise');
+    if (index % 2 !== 0) { // Apply grey-bg to alternate sections based on original HTML
+      sectionEl.classList.add('grey-bg');
+    }
+
+    const sectionHeader = document.createElement('div');
+    sectionHeader.classList.add('section-header', 'text-center', 'pb-3');
+
+    const heading = document.createElement('h2');
+    heading.classList.add('heading', 'font-regular', 'aos-init', 'aos-animate');
+    heading.textContent = sectionData.heading;
+    sectionHeader.append(heading);
+
+    const description = document.createElement('p');
+    description.classList.add('aos-init', 'aos-animate');
+    description.textContent = sectionData.description;
+    sectionHeader.append(description);
+
+    sectionEl.append(sectionHeader);
+
+    const performanceDriven = document.createElement('div');
+    performanceDriven.classList.add('performance-driven', 'performace-driven-home');
+
+    const container = document.createElement('div');
+    container.classList.add('container');
+
+    const performaceDrivenCards = document.createElement('div');
+    performaceDrivenCards.classList.add('performace-driven-cards');
+
+    sectionData.cards.forEach((cardData) => {
+      const cardLink = document.createElement('a');
+      cardLink.classList.add('performace-driven-cards-link');
+      cardLink.href = cardData.link;
+      cardLink.target = '_blank'; // From original HTML
+
+      const cardWrapper = document.createElement('div');
+      cardWrapper.classList.add('performace-driven-card-wrapper');
+
+      const cardImage = document.createElement('div');
+      cardImage.classList.add('card-image');
+      if (cardData.image) {
+        // moveInstrumentation should be called with the original cell and the new element
+        // The original cell for the image is cardData.instrumentationSource.children[0]
+        // The new element is the img inside the optimized picture
+        const imgElement = cardData.image.querySelector('img');
+        if (imgElement) {
+          moveInstrumentation(cardData.instrumentationSource.children[0], imgElement);
+        }
+        cardImage.append(cardData.image);
+      }
+
+      const homeBoxCard = document.createElement('div');
+      homeBoxCard.classList.add('performace-driven-home-box-card');
+
+      const desc = document.createElement('p');
+      desc.classList.add('desc');
+      desc.innerHTML = cardData.description.replace(/\n/g, '<br>'); // Preserve line breaks from text content
+
+      homeBoxCard.append(desc);
+      cardWrapper.append(cardImage, homeBoxCard);
+
+      moveInstrumentation(cardData.instrumentationSource, cardLink);
+      cardLink.append(cardWrapper);
+      performaceDrivenCards.append(cardLink);
+    });
+
+    container.append(performaceDrivenCards);
+    performanceDriven.append(container);
+    sectionEl.append(performanceDriven);
+
+    block.append(sectionEl);
+  });
+}
