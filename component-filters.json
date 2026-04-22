@@ -27,44 +27,72 @@
       "footer-main",
       "purpose-led-grid",
       "performace-driven-cards",
-      "twitter-feed"
+      "twitter-feed",
+      "header",
+      "footer",
+      "footer-main",
+      "cards",
+      "columns",
+      "faqs-section",
+      "footer",
+      "footer-main",
+      "fragment",
+      "header",
+      "hero",
+      "latest-stories",
+      "performace-driven-cards",
+      "purpose-led-grid",
+      "spacedivider-section",
+      "spirit-of-rise",
+      "spotlight-home",
+      "spotlight-home-wrap",
+      "what-we-do-wrap",
+      "work-with-us"
+    ]
+  },
+  {
+    "id": "cards",
+    "components": [
+      "card"
+    ]
+  },
+  {
+    "id": "columns",
+    "components": [
+      "column"
+    ]
+  },
+  {
+    "id": "column",
+    "components": [
+      "text",
+      "image",
+      "button",
+      "title"
     ]
   },
   {
     "id": "faqs-section",
     "components": [
-      "faq-item"
+      "faq"
     ]
   },
   {
     "id": "footer-main",
     "components": [
-      "footer-social-item",
-      "footer-link-block",
-      "footer-menu-item",
-      "footer-secondary-nav-item"
+      "footer-section"
+    ]
+  },
+  {
+    "id": "header",
+    "components": [
+      "nav-item"
     ]
   },
   {
     "id": "latest-stories",
     "components": [
-      "twitter-feed-post",
-      "story-card"
-    ]
-  },
-  {
-    "id": "main-header",
-    "components": [
-      "navigation-item",
-      "contact-link-item",
-      "search-item",
-      "press-release-item"
-    ]
-  },
-  {
-    "id": "performace-driven-cards",
-    "components": [
-      "performace-driven-card-item"
+      "story"
     ]
   },
   {
@@ -76,26 +104,26 @@
   {
     "id": "spirit-of-rise",
     "components": [
-      "performace-driven-card"
+      "spirit-of-rise-card"
     ]
   },
   {
     "id": "spotlight-home-wrap",
     "components": [
-      "spotlight-slide",
+      "slide",
       "quick-link"
     ]
   },
   {
-    "id": "twitter-feed",
+    "id": "spotlight-home",
     "components": [
-      "twitter-feed-post"
+      "spotlight-slide"
     ]
   },
   {
     "id": "what-we-do-wrap",
     "components": [
-      "business-vertical-item"
+      "business-vertical"
     ]
   },
   {

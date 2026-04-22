@@ -1050,8 +1050,6 @@ body .rotate-div{display:flex;} }
 
 .eapps-twitter-feed-posts-item-media-items-1 .eapps-twitter-feed-posts-item-media { width:100%;height:auto;padding-bottom:0 }
 
-.eapps-twitter-feed-posts-item-media-items-1 .eapps-twitter-feed-posts-item-media a { display:flex }
-
 .eapps-twitter-feed-posts-item-media-items-1 .eapps-twitter-feed-posts-item-media-item-image { display:block }
 
 .eapps-twitter-feed-posts-item-media-items-3 .eapps-twitter-feed-posts-item-media-item:nth-child(1) { width:calc(50% - 1px);height:auto;position:absolute;top:0;bottom:0;left:0;right:auto }

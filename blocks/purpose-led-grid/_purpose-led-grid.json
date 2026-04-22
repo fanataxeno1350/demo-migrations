@@ -50,25 +50,23 @@
         {
           "component": "reference",
           "label": "Image",
-          "name": "image",
-          "valueType": "string"
-        },
-        {
-          "component": "text",
-          "label": "Alt Text",
-          "name": "altText",
-          "valueType": "string"
+          "name": "image"
         },
         {
           "component": "aem-content",
-          "label": "Card Link",
-          "name": "link",
+          "label": "Link",
+          "name": "link"
+        },
+        {
+          "component": "text",
+          "label": "Link Label",
+          "name": "linkLabel",
           "valueType": "string"
         },
         {
           "component": "richtext",
-          "label": "Description",
-          "name": "description",
+          "label": "Text",
+          "name": "text",
           "valueType": "string"
         }
       ]

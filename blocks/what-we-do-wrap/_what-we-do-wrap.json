@@ -17,15 +17,15 @@
       }
     },
     {
-      "title": "Business-Vertical-Item",
-      "id": "business-vertical-item",
+      "title": "Business-Vertical",
+      "id": "business-vertical",
       "plugins": {
         "xwalk": {
           "page": {
             "resourceType": "core/franklin/components/block/v1/block/item",
             "template": {
-              "model": "business-vertical-item",
-              "name": "Business-Vertical-Item"
+              "model": "business-vertical",
+              "name": "Business-Vertical"
             }
           }
         }
@@ -50,14 +50,14 @@
         },
         {
           "component": "container",
-          "item": "business-vertical-item",
+          "item": "business-vertical",
           "label": "Business Verticals",
           "name": "businessVerticals"
         }
       ]
     },
     {
-      "id": "business-vertical-item",
+      "id": "business-vertical",
       "fields": [
         {
           "component": "reference",
@@ -72,15 +72,15 @@
           "valueType": "string"
         },
         {
-          "component": "reference",
-          "label": "Title Icon",
-          "name": "icon",
-          "valueType": "string"
-        },
-        {
           "component": "aem-content",
           "label": "Link",
           "name": "link",
+          "valueType": "string"
+        },
+        {
+          "component": "text",
+          "label": "Link Label",
+          "name": "linkLabel",
           "valueType": "string"
         }
       ]
@@ -90,7 +90,7 @@
     {
       "id": "what-we-do-wrap",
       "components": [
-        "business-vertical-item"
+        "business-vertical"
       ]
     }
   ]

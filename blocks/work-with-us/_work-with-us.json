@@ -61,18 +61,12 @@
         },
         {
           "component": "text",
-          "label": "Image Alt Text",
-          "name": "alt",
-          "valueType": "string"
-        },
-        {
-          "component": "text",
-          "label": "Slide Title",
+          "label": "Title",
           "name": "title",
           "valueType": "string"
         },
         {
-          "component": "text",
+          "component": "richtext",
           "label": "Description",
           "name": "description",
           "valueType": "string"
@@ -86,7 +80,7 @@
         {
           "component": "text",
           "label": "CTA Label",
-          "name": "ctaLabel",
+          "name": "ctaLinkLabel",
           "valueType": "string"
         }
       ]

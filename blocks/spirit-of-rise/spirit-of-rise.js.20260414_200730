@@ -1,0 +1,112 @@
+import { createOptimizedPicture } from '../../scripts/aem.js';
+import { moveInstrumentation } from '../../scripts/scripts.js';
+
+export default function decorate(block) {
+  // Separate rows based on their cell count, which corresponds to the model types.
+  // spirit-of-rise-section has 3 cells: heading, description, cards (container)
+  // spirit-of-rise-card has 4 cells: image, link, linkLabel, text
+  const allRows = [...block.children];
+  const sectionRows = allRows.filter((row) => row.children.length === 3);
+  const cardRows = allRows.filter((row) => row.children.length === 4);
+
+  block.textContent = ''; // Clear the block content
+
+  sectionRows.forEach((sectionRow) => {
+    // Use content detection for cells within a section row
+    const cells = [...sectionRow.children];
+    const headingCell = cells.find(cell => !cell.querySelector('picture') && !cell.querySelector('a') && cell.textContent.trim() !== 'Cards value');
+    const descriptionCell = cells.find(cell => !cell.querySelector('picture') && !cell.querySelector('a') && cell.textContent.trim() !== 'Cards value' && cell !== headingCell);
+    // The third cell is a container for cards, we don't directly read its content here.
+
+    const sectionHeader = document.createElement('div');
+    sectionHeader.classList.add('section-header', 'text-center', 'pb-3');
+    moveInstrumentation(sectionRow, sectionHeader);
+
+    if (headingCell) {
+      const heading = document.createElement('h2');
+      heading.classList.add('heading', 'font-regular');
+      heading.textContent = headingCell.textContent.trim();
+      sectionHeader.append(heading);
+    }
+
+    if (descriptionCell) {
+      const description = document.createElement('p');
+      description.textContent = descriptionCell.textContent.trim();
+      sectionHeader.append(description);
+    }
+
+    block.append(sectionHeader);
+
+    const performanceDriven = document.createElement('div');
+    performanceDriven.classList.add('performance-driven', 'performace-driven-home');
+
+    const container = document.createElement('div');
+    container.classList.add('container');
+
+    const cardsContainer = document.createElement('div');
+    cardsContainer.classList.add('performace-driven-cards');
+
+    // Append all cardRows to each section. This assumes a flat structure where all cards
+    // are associated with all sections, or that the block structure implies this.
+    // If cards were meant to be nested under specific sections, the filtering logic
+    // for cardRows would need to be more sophisticated (e.g., based on position relative to sectionRow).
+    cardRows.forEach((cardRow) => {
+      // Use content detection for cells within a card row
+      const cardCells = [...cardRow.children];
+      const imageCell = cardCells.find(cell => cell.querySelector('picture'));
+      const linkCell = cardCells.find(cell => cell.querySelector('a'));
+      const linkLabelCell = cardCells.find(cell => !cell.querySelector('picture') && !cell.querySelector('a') && cell !== imageCell && cell !== linkCell && cell.textContent.trim() !== '' && !cell.innerHTML.includes('<p>'));
+      const textCell = cardCells.find(cell => cell.innerHTML.includes('<p>')); // Richtext cell
+
+      const cardLink = document.createElement('a');
+      cardLink.classList.add('performace-driven-cards-link');
+      moveInstrumentation(cardRow, cardLink);
+
+      if (linkCell) {
+        const foundLink = linkCell.querySelector('a');
+        if (foundLink) {
+          cardLink.href = foundLink.href;
+          cardLink.target = '_blank';
+        }
+      }
+
+      const cardWrapper = document.createElement('div');
+      cardWrapper.classList.add('performace-driven-card-wrapper');
+
+      if (imageCell) {
+        const cardImageDiv = document.createElement('div');
+        cardImageDiv.classList.add('card-image');
+        const picture = imageCell.querySelector('picture');
+        if (picture) {
+          cardImageDiv.append(picture);
+        }
+        cardWrapper.append(cardImageDiv);
+      }
+
+      const homeBoxCard = document.createElement('div');
+      homeBoxCard.classList.add('performace-driven-home-box-card');
+
+      if (textCell) {
+        const desc = document.createElement('p');
+        desc.classList.add('desc');
+        desc.innerHTML = textCell.innerHTML;
+        homeBoxCard.append(desc);
+      }
+
+      cardWrapper.append(homeBoxCard);
+      cardLink.append(cardWrapper);
+      cardsContainer.append(cardLink);
+    });
+
+    container.append(cardsContainer);
+    performanceDriven.append(container);
+    block.append(performanceDriven);
+  });
+
+  // Optimize images
+  block.querySelectorAll('picture > img').forEach((img) => {
+    const optimizedPic = createOptimizedPicture(img.src, img.alt, false, [{ width: '750' }]);
+    moveInstrumentation(img, optimizedPic.querySelector('img'));
+    img.closest('picture').replaceWith(optimizedPic);
+  });
+}

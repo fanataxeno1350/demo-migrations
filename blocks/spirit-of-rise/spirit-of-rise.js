@@ -4,77 +4,81 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 export default function decorate(block) {
   const [headingRow, descriptionRow, ...cardRows] = [...block.children];
 
+  block.classList.add('section', 'grey-bg');
+
+  // Section Header
   const sectionHeader = document.createElement('div');
   sectionHeader.classList.add('section-header', 'text-center', 'pb-3');
+  moveInstrumentation(headingRow, sectionHeader);
 
   const heading = document.createElement('h2');
   heading.classList.add('heading', 'font-regular', 'aos-init', 'aos-animate');
-  moveInstrumentation(headingRow.firstElementChild, heading);
-  heading.textContent = headingRow.firstElementChild.textContent.trim();
-  sectionHeader.appendChild(heading);
+  heading.textContent = headingRow.firstElementChild?.textContent.trim() || '';
+  sectionHeader.append(heading);
 
   const description = document.createElement('p');
   description.classList.add('aos-init', 'aos-animate');
-  moveInstrumentation(descriptionRow.firstElementChild, description);
-  description.textContent = descriptionRow.firstElementChild.textContent.trim();
-  sectionHeader.appendChild(description);
+  description.textContent = descriptionRow.firstElementChild?.textContent.trim() || '';
+  sectionHeader.append(description);
 
+  // Performance Driven Cards
   const performanceDriven = document.createElement('div');
   performanceDriven.classList.add('performance-driven', 'performace-driven-home');
 
   const container = document.createElement('div');
   container.classList.add('container');
-  performanceDriven.appendChild(container);
 
   const cardsWrapper = document.createElement('div');
   cardsWrapper.classList.add('performace-driven-cards');
-  container.appendChild(cardsWrapper);
 
   cardRows.forEach((row) => {
-    const [linkCell, imageCell, descriptionCell] = [...row.children];
+    const [imageCell, linkCell, linkLabelCell, textCell] = [...row.children];
 
-    const cardLink = document.createElement('a');
-    cardLink.classList.add('performace-driven-cards-link');
+    const link = document.createElement('a');
+    link.classList.add('performace-driven-cards-link');
     const foundLink = linkCell.querySelector('a');
     if (foundLink) {
-      cardLink.href = foundLink.href;
-      cardLink.target = '_blank';
+      link.href = foundLink.href;
+      link.target = '_blank'; // Assuming target blank from original HTML
     }
-    moveInstrumentation(linkCell, cardLink);
+    moveInstrumentation(row, link);
 
     const cardWrapper = document.createElement('div');
     cardWrapper.classList.add('performace-driven-card-wrapper');
-    cardLink.appendChild(cardWrapper);
 
-    const cardImageDiv = document.createElement('div');
-    cardImageDiv.classList.add('card-image');
+    // Image
+    const cardImage = document.createElement('div');
+    cardImage.classList.add('card-image');
     const picture = imageCell.querySelector('picture');
     if (picture) {
-      const img = picture.querySelector('img');
-      if (img) {
-        const optimizedPic = createOptimizedPicture(img.src, img.alt, false, [{ width: '750' }]);
-        moveInstrumentation(img, optimizedPic.querySelector('img'));
-        cardImageDiv.appendChild(optimizedPic);
-      }
+      cardImage.append(picture);
     }
-    cardWrapper.appendChild(cardImageDiv);
-    moveInstrumentation(imageCell, cardImageDiv);
+    cardWrapper.append(cardImage);
 
-    const cardBox = document.createElement('div');
-    cardBox.classList.add('performace-driven-home-box-card');
-    cardWrapper.appendChild(cardBox);
+    // Text Content
+    const homeBoxCard = document.createElement('div');
+    homeBoxCard.classList.add('performace-driven-home-box-card');
 
-    const cardDescription = document.createElement('p');
-    cardDescription.classList.add('desc');
-    cardDescription.textContent = descriptionCell.textContent.trim(); // Changed from innerHTML to textContent
-    cardBox.appendChild(cardDescription);
-    moveInstrumentation(descriptionCell, cardDescription);
+    const desc = document.createElement('p');
+    desc.classList.add('desc');
+    desc.innerHTML = textCell.innerHTML; // Rich text content
+    homeBoxCard.append(desc);
 
-    cardsWrapper.appendChild(cardLink);
+    cardWrapper.append(homeBoxCard);
+    link.append(cardWrapper);
+    cardsWrapper.append(link);
   });
 
-  block.innerHTML = '';
-  block.classList.add('section', 'grey-bg', 'spirit-of-rise');
-  block.appendChild(sectionHeader);
-  block.appendChild(performanceDriven);
+  container.append(cardsWrapper);
+  performanceDriven.append(container);
+
+  block.textContent = '';
+  block.append(sectionHeader, performanceDriven);
+
+  // Optimize images
+  block.querySelectorAll('picture > img').forEach((img) => {
+    const optimizedPic = createOptimizedPicture(img.src, img.alt, false, [{ width: '750' }]);
+    moveInstrumentation(img, optimizedPic.querySelector('img'));
+    img.closest('picture').replaceWith(optimizedPic);
+  });
 }

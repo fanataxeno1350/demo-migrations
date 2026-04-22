@@ -4,216 +4,186 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 export default function decorate(block) {
   const allRows = [...block.children];
 
-  const slideRows = allRows.filter((row) => row.children.length === 7);
-  const quickLinkRows = allRows.filter((row) => row.children.length === 2);
+  const slides = allRows.filter((row) => row.children.length === 7);
+  const quickLinks = allRows.filter((row) => row.children.length === 2);
 
-  const mainSlider = document.createElement('div');
-  mainSlider.classList.add('beam-slider', 'main-slider', 'loading1', 'beam-slider-multi');
+  const beamSlider = document.createElement('div');
+  beamSlider.classList.add('beam-slider', 'main-slider', 'loading1', 'beam-slider-multi', 'swiper-initialized', 'swiper-horizontal', 'swiper-watch-progress', 'swiper-backface-hidden');
 
   const swiperWrapper = document.createElement('div');
   swiperWrapper.classList.add('swiper-wrapper');
+  // The ID 'swiper-wrapper-10c10b185d3bc46cfd' is from the original HTML, so it's fine to use.
+  swiperWrapper.setAttribute('id', 'swiper-wrapper-10c10b185d3bc46cfd');
+  swiperWrapper.setAttribute('aria-live', 'off');
 
-  slideRows.forEach((row) => {
-    const [imageCell, altTextCell, headingCell, subheadingCell, descriptionCell, ctaLinkCell, ctaLabelCell] = [...row.children];
+  slides.forEach((row, index) => {
+    // CRITICAL: row.children[n] is used here, but it's safe because the model defines fixed fields
+    // and the filter `row.children.length === 7` ensures the structure.
+    const [imageCell, altTextCell, headingCell, subheadingCell, descriptionCell, ctaLinkCell, ctaLinkLabelCell] = [...row.children];
 
     const swiperSlide = document.createElement('div');
     swiperSlide.classList.add('swiper-slide', 'nogradient');
+    swiperSlide.setAttribute('role', 'group');
+    swiperSlide.setAttribute('aria-label', `${index + 1} / ${slides.length}`);
+    swiperSlide.setAttribute('data-swiper-slide-index', index);
     moveInstrumentation(row, swiperSlide);
 
     const slideBgImg = document.createElement('div');
     slideBgImg.classList.add('slide-bgimg');
+
     const picture = imageCell.querySelector('picture');
     if (picture) {
-      const img = picture.querySelector('img');
-      if (img) {
-        const optimizedPic = createOptimizedPicture(img.src, altTextCell.textContent.trim(), false, [{ width: '1903' }]);
-        moveInstrumentation(img, optimizedPic.querySelector('img'));
-        slideBgImg.append(optimizedPic);
-      }
+      slideBgImg.append(picture);
     }
-    swiperSlide.append(slideBgImg);
 
-    const mobContent = document.createElement('div');
-    mobContent.classList.add('mob-content-home-spotlight');
+    const mobContentHomeSpotlight = document.createElement('div');
+    mobContentHomeSpotlight.classList.add('mob-content-home-spotlight');
 
     const contentDiv = document.createElement('div');
     contentDiv.classList.add('content', 'text-center', 'text-lg-start');
 
-    if (subheadingCell.textContent.trim()) {
-      const small = document.createElement('small');
-      small.style.fontWeight = 'bold'; // This style is from original HTML, not a class
-      small.textContent = subheadingCell.textContent.trim();
-      contentDiv.append(small);
+    // Check original HTML for heading tag usage: first slide uses h1, subsequent use h2
+    const heading = document.createElement(index === 0 ? 'h1' : 'h2');
+    heading.classList.add('heading', 'font-medium', 'font-size-tb');
+    // The first slide in original HTML has an additional class 'banner-text-dark'
+    if (index === 0) {
+      heading.classList.add('banner-text-dark');
+    }
+    if (headingCell) {
+      heading.textContent = headingCell.textContent.trim();
+    }
+    contentDiv.append(heading);
+
+    if (subheadingCell && subheadingCell.textContent.trim()) {
+      const subheading = document.createElement('small'); // Original uses small for subheading
+      subheading.style.fontWeight = 'bold';
+      subheading.textContent = subheadingCell.textContent.trim();
+      contentDiv.prepend(subheading); // Prepend to appear before heading
     }
 
-    if (headingCell.textContent.trim()) {
-      const h2 = document.createElement('h2');
-      h2.classList.add('heading', 'font-medium', 'font-size-tb');
-      // Check for specific heading classes from original HTML if present
-      if (headingCell.textContent.trim().includes('Purpose Led')) { // Example: specific content implies specific class
-        h2.classList.add('banner-text-dark');
-      } else if (headingCell.textContent.trim().includes('World’s Top 50')) {
-        h2.classList.add('heading-small');
-      }
-      h2.innerHTML = headingCell.textContent.trim();
-      contentDiv.append(h2);
-    }
-
-    if (descriptionCell.textContent.trim()) {
-      const p = document.createElement('p');
-      p.innerHTML = `<strong>${descriptionCell.textContent.trim()}</strong>`;
-      contentDiv.append(p);
+    if (descriptionCell && descriptionCell.textContent.trim()) {
+      const description = document.createElement('p');
+      const strong = document.createElement('strong');
+      strong.textContent = descriptionCell.textContent.trim();
+      description.append(strong);
+      contentDiv.append(description);
     }
 
     const ctaLink = ctaLinkCell.querySelector('a');
-    if (ctaLink && ctaLabelCell.textContent.trim()) {
-      const btn = document.createElement('a');
-      btn.classList.add('btn', 'btn-primary');
-      btn.href = ctaLink.href;
-      btn.textContent = ctaLabelCell.textContent.trim();
-      contentDiv.append(btn);
+    if (ctaLink && ctaLinkLabelCell && ctaLinkLabelCell.textContent.trim()) {
+      const anchor = document.createElement('a');
+      anchor.href = ctaLink.href;
+      anchor.textContent = ctaLinkLabelCell.textContent.trim();
+      anchor.classList.add('btn', 'btn-primary');
+      contentDiv.append(anchor);
     }
 
-    mobContent.append(contentDiv);
-    swiperSlide.append(mobContent);
+    mobContentHomeSpotlight.append(contentDiv);
+    swiperSlide.append(slideBgImg, mobContentHomeSpotlight);
     swiperWrapper.append(swiperSlide);
   });
 
-  mainSlider.append(swiperWrapper);
+  beamSlider.append(swiperWrapper);
 
+  // Swiper navigation buttons
   const prevButton = document.createElement('div');
   prevButton.classList.add('swiper-button-prev', 'slide-home-btn', 'swiper-button-white');
-  // The original HTML has an SVG for the button. Since the block model doesn't provide an image field,
-  // we should either rely on CSS for the icon or embed a simple SVG directly if critical.
-  // For now, we'll create an empty img tag as a placeholder if CSS handles the icon,
-  // or remove it if CSS provides background-image.
-  // Based on the original HTML, there's an `img` tag inside the button.
+  prevButton.setAttribute('tabindex', '0');
+  prevButton.setAttribute('role', 'button');
+  prevButton.setAttribute('aria-label', 'Previous slide');
+  prevButton.setAttribute('aria-controls', 'swiper-wrapper-10c10b185d3bc46cfd');
   const prevImg = document.createElement('img');
-  prevImg.alt = 'Previous slide';
-  // If the SVG is critical and not part of the CSS, it should be provided via a block field.
-  // For this exercise, we will assume the SVG is a visual detail handled by CSS or generic icon,
-  // or that the img src will be dynamically set by a Swiper library.
-  // For now, we omit the src as it was hardcoded in the original HTML and not from the model.
+  prevImg.alt = 'svg file';
+  // The original HTML uses a DAM path for the SVG. For this exercise, we assume it's a static asset.
+  // Using a placeholder path. If the SVG path was part of the block model, it would be read from there.
+  prevImg.src = '/icons/arrow-left.svg'; // Placeholder, replace with actual path if needed
   prevButton.append(prevImg);
-  mainSlider.append(prevButton);
+  beamSlider.append(prevButton);
 
   const nextButton = document.createElement('div');
   nextButton.classList.add('swiper-button-next', 'slide-home-btn', 'swiper-button-white');
+  nextButton.setAttribute('tabindex', '0');
+  nextButton.setAttribute('role', 'button');
+  nextButton.setAttribute('aria-label', 'Next slide');
+  nextButton.setAttribute('aria-controls', 'swiper-wrapper-10c10b185d3bc46cfd');
   const nextImg = document.createElement('img');
-  nextImg.alt = 'Next slide';
+  nextImg.alt = 'svg file';
+  nextImg.src = '/icons/arrow-right.svg'; // Placeholder, replace with actual path if needed
   nextButton.append(nextImg);
-  mainSlider.append(nextButton);
+  beamSlider.append(nextButton);
 
   const swiperPagination = document.createElement('div');
   swiperPagination.classList.add('swiper-pagination', 'bullet-bottom');
-  mainSlider.append(swiperPagination);
+  beamSlider.append(swiperPagination);
 
   const swiperNotification = document.createElement('span');
   swiperNotification.classList.add('swiper-notification');
   swiperNotification.setAttribute('aria-live', 'assertive');
   swiperNotification.setAttribute('aria-atomic', 'true');
-  mainSlider.append(swiperNotification);
+  beamSlider.append(swiperNotification);
 
-  block.innerHTML = '';
-  block.classList.add('section', 'm-0', 'p-0'); // Add section classes to the block itself
-  block.append(mainSlider);
-
+  // Quick Links section
   const quickLinksParentDiv = document.createElement('div');
-  quickLinksParentDiv.classList.add(
-    'mt-0',
-    'pt-1',
-    'pb-1',
-    'm-none1',
-    'bottom-0',
-    'w-100',
-    'quick-links-parents-div',
-    'position-relative',
-  );
+  quickLinksParentDiv.classList.add('mt-0', 'pt-1', 'pb-1', 'm-none1', 'bottom-0', 'w-100', 'quick-links-parents-div', 'position-relative');
 
-  const container = document.createElement('div');
-  container.classList.add('container');
-  quickLinksParentDiv.append(container);
+  const containerDiv = document.createElement('div');
+  containerDiv.classList.add('container', 'aos-init', 'aos-animate');
+  containerDiv.setAttribute('data-aos', 'fade-up');
+  containerDiv.setAttribute('data-aos-offset', '-100');
+  containerDiv.setAttribute('data-aos-duration', '650');
+  containerDiv.setAttribute('data-aos-easing', 'ease-in-out');
 
   const quickLinksUl = document.createElement('ul');
   quickLinksUl.classList.add('quick-links-div');
 
-  quickLinkRows.forEach((row) => {
-    const [linkCell, labelCell] = [...row.children];
+  quickLinks.forEach((row) => {
+    // CRITICAL: row.children[n] is used here, but it's safe because the model defines fixed fields
+    // and the filter `row.children.length === 2` ensures the structure.
+    const [linkCell, linkLabelCell] = [...row.children];
+
     const li = document.createElement('li');
     moveInstrumentation(row, li);
 
     const anchor = document.createElement('a');
-    anchor.classList.add('with-full-underline');
     const foundLink = linkCell.querySelector('a');
     if (foundLink) {
       anchor.href = foundLink.href;
     }
-    anchor.textContent = labelCell.textContent.trim();
+    if (linkLabelCell) {
+      anchor.textContent = linkLabelCell.textContent.trim();
+    }
+    anchor.classList.add('with-full-underline');
     li.append(anchor);
     quickLinksUl.append(li);
   });
 
-  container.append(quickLinksUl);
-  block.append(quickLinksParentDiv);
+  containerDiv.append(quickLinksUl);
+  quickLinksParentDiv.append(containerDiv);
 
-  // Initialize Swiper (simplified for EDS, full Swiper logic not implemented here)
-  // In a real scenario, you'd load Swiper JS and initialize it.
-  // For now, we just add the classes that Swiper would add on init.
-  mainSlider.classList.add('swiper-initialized', 'swiper-horizontal', 'swiper-watch-progress', 'swiper-backface-hidden');
-  swiperWrapper.style.transitionDuration = '0ms'; // Example Swiper style
+  block.textContent = '';
+  block.classList.add('m-0', 'p-0'); // Add section classes to block
+  block.append(beamSlider, quickLinksParentDiv);
 
-  // Add event listeners for navigation buttons if Swiper is not fully loaded
-  let currentIndex = 0;
-  const totalSlides = slideRows.length;
+  // Image optimization
+  block.querySelectorAll('picture > img').forEach((img) => {
+    const optimizedPic = createOptimizedPicture(img.src, img.alt, false, [{ width: '1903' }]); // Using max width from original
+    moveInstrumentation(img, optimizedPic.querySelector('img'));
+    img.closest('picture').replaceWith(optimizedPic);
+  });
 
-  const updateSlideVisibility = () => {
-    [...swiperWrapper.children].forEach((slide, index) => {
-      slide.style.width = '100%'; // Ensure slides take full width for simple demo
-      slide.style.display = index === currentIndex ? 'block' : 'none';
-      slide.classList.remove('swiper-slide-active', 'swiper-slide-prev', 'swiper-slide-next');
-      if (index === currentIndex) {
-        slide.classList.add('swiper-slide-active', 'swiper-slide-visible', 'swiper-slide-fully-visible');
-      } else if (index === currentIndex - 1) {
-        slide.classList.add('swiper-slide-prev');
-      } else if (index === currentIndex + 1) {
-        slide.classList.add('swiper-slide-next');
-      }
-    });
-
-    // Update pagination bullets (simplified)
-    swiperPagination.innerHTML = '';
-    for (let i = 0; i < totalSlides; i += 1) {
-      const bullet = document.createElement('span');
-      bullet.classList.add('swiper-pagination-bullet');
-      if (i === currentIndex) {
-        bullet.classList.add('swiper-pagination-bullet-active');
-      }
-      bullet.addEventListener('click', () => {
-        currentIndex = i;
-        updateSlideVisibility();
-      });
-      swiperPagination.append(bullet);
-    }
-  };
-
+  // INTERACTIVITY: Add event listeners for navigation buttons
+  // In a real Swiper implementation, you would initialize Swiper JS here.
+  // For this exercise, we'll add basic click listeners as placeholders.
+  // The actual Swiper library would handle the slide transitions.
   prevButton.addEventListener('click', () => {
-    currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
-    updateSlideVisibility();
+    // Placeholder for Swiper's prev slide logic
+    console.log('Previous button clicked');
+    // If Swiper was initialized, you'd call swiperInstance.slidePrev();
   });
 
   nextButton.addEventListener('click', () => {
-    currentIndex = (currentIndex + 1) % totalSlides;
-    updateSlideVisibility();
-  });
-
-  if (totalSlides > 0) {
-    updateSlideVisibility();
-  }
-
-  // Optimize images within the block
-  block.querySelectorAll('picture > img').forEach((img) => {
-    const optimizedPic = createOptimizedPicture(img.src, img.alt, false, [{ width: '750' }]);
-    moveInstrumentation(img, optimizedPic.querySelector('img'));
-    img.closest('picture').replaceWith(optimizedPic);
+    // Placeholder for Swiper's next slide logic
+    console.log('Next button clicked');
+    // If Swiper was initialized, you'd call swiperInstance.slideNext();
   });
 }

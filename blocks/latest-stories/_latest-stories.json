@@ -17,30 +17,15 @@
       }
     },
     {
-      "title": "Twitter-Feed-Post",
-      "id": "twitter-feed-post",
+      "title": "Story",
+      "id": "story",
       "plugins": {
         "xwalk": {
           "page": {
             "resourceType": "core/franklin/components/block/v1/block/item",
             "template": {
-              "model": "twitter-feed-post",
-              "name": "Twitter-Feed-Post"
-            }
-          }
-        }
-      }
-    },
-    {
-      "title": "Story-Card",
-      "id": "story-card",
-      "plugins": {
-        "xwalk": {
-          "page": {
-            "resourceType": "core/franklin/components/block/v1/block/item",
-            "template": {
-              "model": "story-card",
-              "name": "Story-Card"
+              "model": "story",
+              "name": "Story"
             }
           }
         }
@@ -53,91 +38,20 @@
       "fields": [
         {
           "component": "text",
-          "label": "Section Heading",
+          "label": "Heading",
           "name": "heading",
           "valueType": "string"
         },
         {
           "component": "container",
-          "item": "twitter-feed-post",
-          "label": "Twitter Feed Posts",
-          "name": "twitterFeedPosts"
-        },
-        {
-          "component": "container",
-          "item": "story-card",
-          "label": "Story Cards",
-          "name": "storyCards"
+          "item": "story",
+          "label": "Stories",
+          "name": "stories"
         }
       ]
     },
     {
-      "id": "twitter-feed-post",
-      "fields": [
-        {
-          "component": "reference",
-          "label": "User Image",
-          "name": "userImage",
-          "valueType": "string"
-        },
-        {
-          "component": "text",
-          "label": "User Name",
-          "name": "userName",
-          "valueType": "string"
-        },
-        {
-          "component": "text",
-          "label": "User Screen Name",
-          "name": "userScreenName",
-          "valueType": "string"
-        },
-        {
-          "component": "aem-content",
-          "label": "User Profile Link",
-          "name": "userProfileLink",
-          "valueType": "string"
-        },
-        {
-          "component": "text",
-          "label": "Post Date",
-          "name": "date",
-          "valueType": "string"
-        },
-        {
-          "component": "richtext",
-          "label": "Post Text",
-          "name": "postText",
-          "valueType": "string"
-        },
-        {
-          "component": "reference",
-          "label": "Media Image",
-          "name": "postMediaImage",
-          "valueType": "string"
-        },
-        {
-          "component": "aem-content",
-          "label": "Post Link",
-          "name": "postLink",
-          "valueType": "string"
-        },
-        {
-          "component": "number",
-          "label": "Reposts",
-          "name": "reposts",
-          "valueType": "number"
-        },
-        {
-          "component": "number",
-          "label": "Likes",
-          "name": "likes",
-          "valueType": "number"
-        }
-      ]
-    },
-    {
-      "id": "story-card",
+      "id": "story",
       "fields": [
         {
           "component": "reference",
@@ -159,8 +73,14 @@
         },
         {
           "component": "aem-content",
-          "label": "Read More Link",
+          "label": "Link",
           "name": "link",
+          "valueType": "string"
+        },
+        {
+          "component": "text",
+          "label": "Link Label",
+          "name": "linkLabel",
           "valueType": "string"
         },
         {
@@ -176,8 +96,7 @@
     {
       "id": "latest-stories",
       "components": [
-        "twitter-feed-post",
-        "story-card"
+        "story"
       ]
     }
   ]

@@ -62,7 +62,27 @@
         "footer-main",
         "purpose-led-grid",
         "performace-driven-cards",
-        "twitter-feed"
+        "twitter-feed",
+        "header",
+        "footer",
+        "footer-main",
+        "cards",
+        "columns",
+        "faqs-section",
+        "footer",
+        "footer-main",
+        "fragment",
+        "header",
+        "hero",
+        "latest-stories",
+        "performace-driven-cards",
+        "purpose-led-grid",
+        "spacedivider-section",
+        "spirit-of-rise",
+        "spotlight-home",
+        "spotlight-home-wrap",
+        "what-we-do-wrap",
+        "work-with-us"
       ]
     }
   ]

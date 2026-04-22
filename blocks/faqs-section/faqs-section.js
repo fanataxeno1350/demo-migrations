@@ -2,7 +2,7 @@ import { createOptimizedPicture } from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 export default function decorate(block) {
-  const [headingRow, ...faqItemRows] = [...block.children];
+  const [headingRow, ...faqRows] = [...block.children];
 
   const section = document.createElement('section');
   section.classList.add('section', 'faqs-section');
@@ -10,87 +10,70 @@ export default function decorate(block) {
 
   const container = document.createElement('div');
   container.classList.add('container');
-  section.appendChild(container);
 
   // Heading
-  if (headingRow) {
-    // CRITICAL FIX: Replaced direct index access with content detection
-    const headingCell = [...headingRow.children].find(cell => cell.textContent.trim() !== '');
-    if (headingCell) {
-      const sectionHeader = document.createElement('div');
-      sectionHeader.classList.add('section-header', 'text-center');
-
-      const heading = document.createElement('h2');
-      heading.classList.add('heading', 'font-regular', 'aos-init', 'aos-animate');
-      heading.textContent = headingCell.textContent.trim();
-      heading.setAttribute('data-aos', 'fade-up');
-
-      moveInstrumentation(headingRow, sectionHeader);
-      sectionHeader.appendChild(heading);
-      container.appendChild(sectionHeader);
-    }
-  }
+  const sectionHeader = document.createElement('div');
+  sectionHeader.classList.add('section-header', 'text-center');
+  const heading = document.createElement('h2');
+  heading.classList.add('heading', 'font-regular', 'aos-init', 'aos-animate');
+  heading.setAttribute('data-aos', 'fade-up');
+  // Use children[0] for consistency, though firstElementChild works here
+  moveInstrumentation(headingRow.children[0], heading);
+  heading.textContent = headingRow.children[0].textContent.trim();
+  sectionHeader.append(heading);
+  container.append(sectionHeader);
 
   // FAQs Accordion
-  if (faqItemRows.length > 0) {
-    const accoDiv = document.createElement('div');
-    accoDiv.classList.add('acco-div');
-    container.appendChild(accoDiv);
+  const accoDiv = document.createElement('div');
+  accoDiv.classList.add('acco-div');
+  const ul = document.createElement('ul');
 
-    const ul = document.createElement('ul');
-    accoDiv.appendChild(ul);
+  faqRows.forEach((row, index) => {
+    const [questionCell, answerCell] = [...row.children];
 
-    faqItemRows.forEach((row, index) => {
-      // Correct: Destructuring is fine here as per model, two cells per item row
-      const [questionCell, answerCell] = [...row.children];
+    const li = document.createElement('li');
+    li.classList.add('aos-init', 'aos-animate');
+    li.setAttribute('data-aos', 'fade-up');
+    if (index === 0) {
+      li.classList.add('active'); // First item is active by default
+    }
+    moveInstrumentation(row, li);
 
-      const li = document.createElement('li');
-      li.classList.add('aos-init', 'aos-animate');
-      li.setAttribute('data-aos', 'fade-up');
-      if (index === 0) {
-        li.classList.add('active'); // First item is active by default
-      }
+    const h2 = document.createElement('h2');
+    h2.setAttribute('data-once', 'faqsAccordion');
+    moveInstrumentation(questionCell, h2);
+    h2.textContent = questionCell.textContent.trim();
 
-      const h2 = document.createElement('h2');
-      h2.setAttribute('data-once', 'faqsAccordion');
-      h2.textContent = questionCell.textContent.trim();
+    const accoContentDiv = document.createElement('div');
+    accoContentDiv.classList.add('acco-content-div');
+    if (index === 0) {
+      accoContentDiv.classList.add('show');
+    }
+    moveInstrumentation(answerCell, accoContentDiv);
+    accoContentDiv.innerHTML = answerCell.innerHTML;
 
-      const accoContentDiv = document.createElement('div');
-      accoContentDiv.classList.add('acco-content-div');
-      if (index === 0) {
-        accoContentDiv.classList.add('show'); // First item content is shown by default
-      }
-      // Correct: Using innerHTML for richtext field 'answer'
-      accoContentDiv.innerHTML = answerCell.innerHTML;
-
-      h2.addEventListener('click', () => {
-        const isActive = li.classList.contains('active');
-        // Close all other open accordions
-        ul.querySelectorAll('li.active').forEach((activeLi) => {
+    h2.addEventListener('click', () => {
+      // Close all other open accordions
+      ul.querySelectorAll('li.active').forEach((activeLi) => {
+        if (activeLi !== li) {
           activeLi.classList.remove('active');
           activeLi.querySelector('.acco-content-div').classList.remove('show');
-        });
-
-        // Toggle current accordion
-        if (!isActive) {
-          li.classList.add('active');
-          accoContentDiv.classList.add('show');
         }
       });
 
-      moveInstrumentation(row, li);
-      li.appendChild(h2);
-      li.appendChild(accoContentDiv);
-      ul.appendChild(li);
+      // Toggle current accordion
+      li.classList.toggle('active');
+      accoContentDiv.classList.toggle('show');
     });
-  }
 
-  block.replaceWith(section);
-
-  // Image optimization (if any images were present in richtext)
-  section.querySelectorAll('picture > img').forEach((img) => {
-    const optimizedPic = createOptimizedPicture(img.src, img.alt, false, [{ width: '750' }]);
-    moveInstrumentation(img, optimizedPic.querySelector('img'));
-    img.closest('picture').replaceWith(optimizedPic);
+    li.append(h2, accoContentDiv);
+    ul.append(li);
   });
+
+  accoDiv.append(ul);
+  container.append(accoDiv);
+  section.append(container);
+
+  block.textContent = '';
+  block.append(section);
 }
